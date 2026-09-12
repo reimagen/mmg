@@ -21,6 +21,7 @@ web/data/*.json
 npm-debug.log*
 .cursor
 .merge-overlay/
+.overlay-stash/
 web/AGENTS.md
 web/CLAUDE.md
 web/next-env.d.ts
