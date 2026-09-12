@@ -90,6 +90,17 @@ assert.ok(m.recall({ name: "Bo" }).open_threads.some((t) => t.includes("intro yo
 // research query prefers the detected employer
 const ada3 = m.upsertPerson({ display_name: "Ada", facts: [{ text: "I'm a founder at Oxen", source: "live", ts: "2026-09-12T21:00:00.000Z" }] });
 assert.equal(e.researchQuery(ada3), '"Ada" Oxen founder', e.researchQuery(ada3));
+// a rename keeps the misheard spelling as an alias (Sam heard as Stan)
+const stan = m.upsertPerson({ display_name: "Stan", facts: [{ text: "Works at OpenAI", source: "live", ts: "2026-09-12T22:00:00.000Z" }] });
+const sam = m.upsertPerson({ id: stan.id, display_name: "Sam" });
+assert.equal(sam.id, stan.id, "correction renames in place, no second person");
+assert.equal(sam.display_name, "Sam");
+assert.ok(sam.aliases.includes("Stan"), "old spelling kept as an alias: " + JSON.stringify(sam.aliases));
+assert.equal(m.recall({ name: "Stan" })?.id, stan.id, "a later mishearing still finds them");
+assert.equal(m.recall({ name: "Sam" })?.id, stan.id);
+assert.deepEqual(d.detect("actually it's Sam").filter((x) => x.kind === "correction").map((x) => x.value), ["Sam"]);
+assert.ok(d.detect("it is S-A-M").some((x) => x.kind === "correction" && x.value === "Sam"), "spelled-out name");
+
 // III F9: recall does not touch last_seen
 const before = m.recall({ name: "Bo" }).last_seen;
 await new Promise((r) => setTimeout(r, 5));

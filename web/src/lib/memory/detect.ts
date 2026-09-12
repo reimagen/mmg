@@ -25,7 +25,10 @@ const PROJECT =
   /\b(?:working on|work on|building|shipping|launching|behind)\s+([A-Za-z][\w&'.-]*(?:\s[A-Z][\w&'.-]*)?(?:\s*(?:,|and|&)\s*[A-Za-z][\w&'.-]*(?:\s[A-Z][\w&'.-]*)?){0,2})/g;
 const COMMITMENT =
   /\b(?:I'?ll|I will|I can|remind me to|let'?s|we should|send me|ping me|email me|follow up|I want to)\b([^.?!]{3,90})/gi;
-const CORRECTION = /\b(?:actually|no,? it'?s|sorry,? it'?s|it'?s spelled|I meant)\b([^.?!]{2,60})/gi;
+const CORRECTION =
+  /\b(?:actually|no,? it'?s|sorry,? it'?s|it'?s spelled|I meant|I said)[,\s]+(?:it'?s\s+)?([^.?!]{2,60})/gi;
+/** "S-A-M" or "S A M" — someone spelling a name out is correcting a mishearing. */
+const SPELLED = /\b([A-Za-z](?:[\s.-][A-Za-z]){2,})\b/g;
 const EMAIL = /\b[\w.+-]+@[\w-]+\.[\w.]{2,}\b/g;
 const HANDLE = /(?:^|\s)(@[a-z0-9_]{2,30})\b/gi;
 const URL = /\bhttps?:\/\/[^\s)]+|\b(?:[a-z0-9-]+\.)+(?:com|ai|dev|io|org|net|co)\b(?:\/[^\s)]*)?/gi;
@@ -81,6 +84,12 @@ export function detect(text: string): Signal[] {
   });
   all(COMMITMENT, text, (m) => push(out, "commitment", `${m[0].trim()}`, m[0]));
   all(CORRECTION, text, (m) => push(out, "correction", m[1], m[0]));
+  all(SPELLED, text, (m) => {
+    const letters = m[1].replace(/[^A-Za-z]/g, "");
+    if (letters.length >= 3 && letters.length <= 14) {
+      push(out, "correction", capitalize(letters.toLowerCase()), m[0]);
+    }
+  });
   for (const re of [EMAIL, HANDLE, URL]) all(re, text, (m) => push(out, "contact", m[1] ?? m[0], m[0]));
   for (const q of text.split(/(?<=[.!?])\s+/)) {
     if (q.trim().endsWith("?") && q.trim().length > 8) push(out, "ask", q, q);

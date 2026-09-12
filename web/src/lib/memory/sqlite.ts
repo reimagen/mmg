@@ -142,8 +142,14 @@ export function upsertPerson(input: UpsertPersonInput): Person {
     : find({ name: input.display_name, face_ref: input.face_ref ?? undefined });
 
   if (existing) {
+    // Speech-to-text mishears names ("Sam at OpenAI" → "Stan"). When a record is renamed, keep the
+    // old spelling as an alias: the correction sticks, and a later mishearing still finds the person.
+    const renamed = nameKey(existing.display_name) !== nameKey(input.display_name);
+    const aliases = input.aliases ?? existing.aliases;
+    existing.aliases = renamed
+      ? [...new Set([...aliases, existing.display_name])].slice(0, 6)
+      : aliases;
     existing.display_name = input.display_name;
-    existing.aliases = input.aliases ?? existing.aliases;
     if (input.face_ref !== undefined) existing.face_ref = input.face_ref;
     if (input.enrolled !== undefined) existing.enrolled = input.enrolled;
     if (input.first_met) existing.first_met = input.first_met;
