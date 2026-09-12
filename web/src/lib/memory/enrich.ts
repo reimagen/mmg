@@ -1,5 +1,6 @@
 import type { Fact, Person } from "../types";
 import { detect } from "./detect.ts";
+import { lookupRoster } from "./roster.ts";
 
 /**
  * F3 — research processing. Pure functions, no I/O. Lisa's queue.ts wraps callExa with them:
@@ -21,15 +22,18 @@ const BOILERPLATE = /spoken-name capture/i;
 
 /** Never a bare first name. "" = unqueryable → the queue skips (a skip, not a bad search). */
 export function researchQuery(person: Person): string {
-  const name = person.display_name.trim();
+  // The roster's full name beats a spoken first name: "Dhravya Shah Supermemory" finds one person.
+  const roster = lookupRoster(person.display_name);
+  const name = (roster?.name ?? person.display_name).trim();
   const live = person.facts
     .filter((f) => f.source === "live" && !BOILERPLATE.test(f.text))
     .sort((a, b) => b.ts.localeCompare(a.ts))
     .slice(0, 2)
     .map((f) => f.text);
+
   // The employer the model understood beats anything a regex can scrape; the detector is the floor.
   const signals = detect(live.join(". "));
-  const company = person.org?.trim() || signals.find((s) => s.kind === "company")?.value;
+  const company = person.org?.trim() || roster?.org?.trim() || signals.find((s) => s.kind === "company")?.value;
   const role = signals.find((s) => s.kind === "role")?.value;
   // A full name is searchable on its own; a bare first name without an employer is not.
   if (!company && !name.includes(" ")) return "";
@@ -152,6 +156,9 @@ export async function researchPerson(
   )
     .filter((sig) => sig.kind === "company" || sig.kind === "role")
     .map((sig) => sig.value);
+  // A stated or roster employer corroborates just as well as a spoken one.
+  const roster = lookupRoster(person.display_name);
+  for (const org of [person.org, roster?.org]) if (org?.trim()) context.push(org.trim());
   const facts = absorbResearch(person, results, source, new Date().toISOString(), context);
   return facts.length
     ? { status: "done", note: `${facts.length} sourced fact(s) from ${results.length} results`, facts }
