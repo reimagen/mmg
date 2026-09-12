@@ -52,3 +52,36 @@ banked · roster 83/79 · dev server in tmux `mmg` (left running). `npm run memo
 warm-start on a stranger's first name; kill research mid-talk) → fill the rehearsal log in
 `docs/SCORING.md` and the AAR in `how/campaigns/campaign_memory_p0.md`. Optional if the clock
 allows: the parallel biased-ASR pass (HANDOFF 15:35) and the four UI findings for Luis.
+
+## Addendum 15:20 — pre-demo verification (superpowers: verification-before-completion)
+
+Ran the full check on Jake's request before the demo. It caught a live defect, which is the point
+of running it rather than asserting it.
+
+**Found:** "nice to meet you, Prashant" returned a cold card. The team page and the attendee list
+both carry him ("Prashant Pisipati" / "Prashant Pawan Pisipati"), so the unique-first-name rule saw
+two people and refused. Same shape for Robert and Seth.
+
+**Fixed:** `lookupRoster` merges rows sharing a first **and** last name, keeping the richer one; two
+different Aarons stay ambiguous, correctly. Dropped the bogus "Seth Tam" row. `npm run seed` now
+also clears `web/data/wiki/who/people`, so the folder never shows people who left memory or old
+spellings of people who did not.
+
+**Evidence, all fresh after the fix:**
+
+| Check | Result |
+|---|---|
+| `tsc --noEmit` | exit 0 |
+| `npm run memory:check` | OK |
+| `npm run backend:check` | exit 0, 7.8 s end to end |
+| Beat one (first name only) | Prashant → RenderWolf AI · Dhravya → Supermemory · Callahan → Prairie Labs · Christian → Meerkatt AI |
+| Beat two (kill research) | `health.enrichment=killed`, next card still landed |
+| Voice path | `/api/session` → `openai: true` |
+| Memory health | `ok` |
+
+**Known going in:** the model path runs 7–8 s per turn (was ~5), so the card lands a beat late; the
+browser's output-idle gate means it reads as a late whisper, not a stall. Reseeded to a clean
+8-teammate ledger with the wiki cleared, so memory fills live on camera.
+
+Repo `main` @ `2b3bcf6`-era + the roster fix, graph mirrored @ `cb6fb0a`, roster 82/79, dev server
+left running in tmux `mmg`.
