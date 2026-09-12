@@ -67,7 +67,7 @@ async function withModel(req: DelegateRequest, key: string): Promise<DelegateRes
     const res = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
-      signal: AbortSignal.timeout(ROUND_MS),
+      signal: AbortSignal.timeout(Math.min(ROUND_MS, Math.max(1, deadline - Date.now()))),
       body: JSON.stringify({
         model: MODEL,
         instructions: await buildInstructions(person?.id ?? req.last_person_id, signals),
