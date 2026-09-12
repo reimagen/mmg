@@ -22,8 +22,7 @@ cd mmg
 cp .env.example web/.env.local   # Next.js does not read the repo-root .env
 # paste OPENAI_API_KEY, EXA_API_KEY, TREG_TOKEN
 cd web && npm install && cd ..
-pip install -r memory/requirements.txt
-python -m memory.seed && uvicorn memory.api:app --port 7777   # other terminal
+(cd web && npm run seed)         # demo cast → web/data/memory.db (SQLite, in-process)
 npm run dev                      # http://localhost:3000
 ```
 
@@ -32,10 +31,13 @@ Requires **Node 22+**. Health check: `curl localhost:3000/api/health`
 ## Local P0 boot
 
 ```bash
-./scripts/p0-up.sh      # seed + uvicorn :7777 if not already serving
-./scripts/p0-check.sh   # /people + /recall; /api/health if :3000 is up
-cd web && npm run dev   # start Next yourself — p0-up never launches it
+cd web && npm run seed && npm run dev   # SQLite in-process: web/data/memory.db (+ web/data/wiki/)
+./scripts/p0-check.sh                   # /api/health + /api/memory/people + /api/session on :3000
 ```
+
+Memory is `@/lib/memory` (SQLite via `node:sqlite`, no sidecar, no `:7777`). `BACKEND_LLM=1` in
+`web/.env.local` turns on the model-driven delegation backend + the LLM-Wiki at `web/data/wiki/`
+(`memory/HANDOFF.md`).
 
 Browser mic is the P0 environment. See [`docs/SHIP.md`](./docs/SHIP.md).
 
@@ -43,7 +45,7 @@ Browser mic is the P0 environment. See [`docs/SHIP.md`](./docs/SHIP.md).
 
 | Person | Owns | Contract |
 |---|---|---|
-| **Jake** | `memory/**` | FastAPI `upsert_person` / `log_interaction` / `brief` (and `recall` by name). Reads &lt; 150ms. |
+| **Jake** | `web/src/lib/memory/**`, `memory/` | SQLite in-process (`node:sqlite`) behind `@/lib/memory`: `upsert_person` / `log_interaction` / `brief` / `recall` by name. HTTP: `/api/memory/*`. Reads &lt; 150ms. |
 | **Lisa** | `web/src/lib/live/**`, `enrichment/**`, `hall/**`, `/api/session`, `/api/delegate` | GPT Live + **client delegation**, Exa queue. Hermes only if hall is already up. |
 | **Saint** | `glasses/**` | **P2.** MentraOS. Camera ≠ Live video. Do not block P0. |
 | **Luis** | `web/src/app/**` | Whisper-card + ledger, demo script, submission. |
@@ -53,7 +55,7 @@ Shared types: `web/src/lib/types.ts`. Change those together.
 ## Three loops (isolated on purpose)
 
 1. **Realtime** — mic → GPT Live → whisper card. Never await the network on stage.
-2. **Memory** — bank the person (`upsert` / `log` / `brief`). Wire Next to Jake’s `:7777` (P0). JSON stub is not the ship path.
+2. **Memory** — bank the person (`upsert` / `log` / `brief`). SQLite in-process behind `@/lib/memory` (`memory/HANDOFF.md`). `MEMORY_BACKEND=json` = the old stub, not the ship path.
 3. **Research** — Exa (P0). Hermes `room:research` only if hall is already up (P1). Killable. Crash ≠ conversation death.
 
 Degraded modes (rehearse **one**): no glasses → browser mic · Exa timeout → skip. Face-rec and second-pass are P2. Auth0 is skip.

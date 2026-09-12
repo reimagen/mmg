@@ -35,9 +35,9 @@ no stranger camera lookup; no Auth0.
 ## Architecture (three loops)
 1. **Realtime (P0):** browser mic → GPT Live → whisper card. Glasses additive.
    Camera never reaches Live.
-2. **Memory (P0):** spoken name + utterances → FastAPI `:7777` → SQLite.
-   `recall` / `brief` < 150 ms, local, never behind the hall. Next.js must call
-   this API (`MEMORY_API_URL`), not the JSON stub.
+2. **Memory (P0):** spoken name + utterances → `@/lib/memory` → SQLite (in-process, `node:sqlite`).
+   `recall` / `brief` < 150 ms, local, never behind the hall. Same five sync functions
+   as the stub; `MEMORY_BACKEND=json` rolls back to it.
 3. **Research (P0 local Exa / P1 Hermes):** killable queue; timeout + skip;
    sourced facts upgrade the card. Crash ≠ conversation death.
    [`HERMES.md`](./HERMES.md).
@@ -69,6 +69,6 @@ See [`JUDGING.md`](./JUDGING.md). Short form:
 Roast + second encounter: only if P0 is already on tape.
 
 ## Open
-- Wire `web/src/lib/memory` → Jake `:7777` (P0).
+- `web/src/lib/memory` = SQLite in-process (P0, done — `memory/HANDOFF.md`).
 - Prove Live E2E on a mic (P0).
 - Hermes connect is P1, not a blocker.

@@ -9,7 +9,7 @@ Hermes is not on the Live path. Memory stays a sidecar. Full contract:
 Measured loop: [`LIVE_LOOP.md`](./LIVE_LOOP.md) (delegation ~0.9 s, Hermes ~17 s).
 
 ```
-GPT Live (client del.)     memory :7777
+GPT Live (client del.)     memory (in-proc SQLite)
         │ thinking.append now
         │ send("research") P1
         ▼

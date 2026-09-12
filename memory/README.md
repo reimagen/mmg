@@ -1,14 +1,14 @@
 # memory/ — the people-memory system
 
-Contract: `docs/context_system_scope.md`. Four HTTP tools for the agent loop.
+**Live code is in `web/src/lib/memory/`** (SQLite in-process via `node:sqlite`, D17).
+Read [`HANDOFF.md`](./HANDOFF.md) — per-person notes, curls, the exit gate.
 
 ```sh
-pip install fastapi uvicorn
-python memory/api.py          # self-check (no server)
-python -m memory.seed         # load demo cast
-uvicorn memory.api:app --port 7777
+cd web && npm run seed          # wipe + load the demo cast → web/data/memory.db
+cd web && npm run memory:check  # self-check
 ```
 
-Tools: `GET /recall?face_ref=|name=` · `POST /upsert_person` · `POST /log_interaction` ·
-`GET /brief/{person_id}`. P0: upsert/log/brief on spoken name. Face-ref recall is P2.
-recall/brief are local-only (<150 ms, no LLM); the realtime loop never awaits research.
+HTTP surface (glasses / Hermes / UI): `POST /api/memory/{upsert,recall,log,brief}`,
+`GET /api/memory/people`. Rollback to the JSON stub: `MEMORY_BACKEND=json`.
+
+`legacy/` = the retired Python FastAPI `:7777` sidecar (schema + seed ported). Not run.

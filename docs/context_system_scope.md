@@ -67,7 +67,7 @@ Bootoshi's **hall** (`docs/chief_of_staff_architecture.md` — ~470 lines
 Bun/TS + SQLite, extractable) is the bridge between the voice agent and controlling agents.
 Composed architecture, two planes:
 
-- **Fast plane (P0):** GPT Live → `upsert` / `log` / `brief` on `:7777` —
+- **Fast plane (P0):** GPT Live → `upsert` / `log` / `brief` in-process (SQLite, `@/lib/memory`) —
   local, <150 ms. Memory is a sidecar, **never behind the hall**.
 - **Slow plane (P1 Hermes / P0 local Exa):** If hall `:8768` is already up,
   `send("research", …)` fire-and-forget. Otherwise the in-process Exa queue.

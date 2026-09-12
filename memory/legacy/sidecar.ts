@@ -1,5 +1,5 @@
 /**
- * Memory client — Jake FastAPI :7777, JSON store fallback if sidecar is down.
+ * LEGACY (D24, 13:25): HTTP client to the retired Python :7777 sidecar. Kept for reference; not imported.
  * Reads timeout fast so Live never hangs on a dead port.
  */
 

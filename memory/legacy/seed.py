@@ -1,4 +1,4 @@
-# Local P0 boot: scripts/p0-up.sh
+# Local P0 boot: cd web && npm run seed (legacy Python path, not run)
 """Demo reset: reload the enrolled cast + canned facts in <10 s. Run: python -m memory.seed"""
 try:
     from memory import api          # python -m memory.seed

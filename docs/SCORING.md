@@ -12,7 +12,7 @@ Last updated: 2026-09-12 12:08 PDT (reranked: bank + research).
 |---|---:|---:|---:|---|---|
 | 1. Core Requirements & Functionality | 2 | 4 | 5 | Lisa + Luis | Live hears a name and banks a card |
 | 2. Innovation & Theme Alignment | 2 | 4 | 5 | Lisa (talk track) | Demo happens *in* conversation, not a typed chat |
-| 3. Technical Execution & Integration | 2 | 4 | 5 | Lisa + Jake | Delegate + sidecar `:7777` + one killed/skipped Exa |
+| 3. Technical Execution & Integration | 2 | 4 | 5 | Lisa + Jake | Delegate + SQLite memory + one killed/skipped Exa |
 | 4. Usefulness & Agentic Experience | 2 | 4 | 5 | Luis + Lisa | Ledger shows banked facts + one research line |
 | **Sum (max 20)** | **8** | **16** | **20** | | |
 
@@ -57,11 +57,11 @@ Named orchestration: **client delegation + memory sidecar (fast) + killable rese
 
 | To reach | Must be true in the video |
 |---:|---|
-| 3 | `/api/delegate` hits Jake’s `:7777`, not the JSON stub. |
+| 3 | `/api/delegate` banks into SQLite (`web/data/memory.db`), not the JSON stub. |
 | 4 | One rehearsed failure: kill/skip Exa *or* no glasses; conversation continues. |
 | 5 | Hermes live *or* a second failure (quota → OpenRouter). Stretch only. |
 
-- [ ] Memory client uses `MEMORY_API_URL`
+- [x] Memory backend = SQLite in-process (`MEMORY_BACKEND` unset); exit gate passed 12:50
 - [ ] Exa timeout + skip (kill or pull the key)
 - [ ] UI card = verbatim ground truth (voice may paraphrase)
 

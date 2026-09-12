@@ -18,7 +18,7 @@ record. Conversation never waits on the network.
 |---|---|---|---|---|
 | **P0** | Browser mic → `Start GPT Live` → spoken name → card | C1 + C2. Without this we are a dashboard. | Lisa | Typed chat |
 | **P0** | Bank the record: `upsert_person` + `log_interaction` + `brief` | The product. Ledger is the close shot. | Lisa + Jake | Invent people |
-| **P0** | Next client talks to Jake `:7777` (`MEMORY_API_URL`) | JSON stub is not banking. | Lisa (client) | New schema |
+| **P0** | `@/lib/memory` = SQLite in-process (D17, **done** — `memory/HANDOFF.md`) | JSON stub is not banking. | Jake | New schema |
 | **P0** | Contact research: Exa timeout + skip; sourced fact lands | Slow plane, C3 + C4. | Lisa | Await Exa on Live |
 | **P0** | Card + ledger show banked + researched facts | C4. UI is ground truth. | Luis | Chat composer |
 | **P0** | Two rehearsals, 2-min video, portal paste | Deadline. Freeze after take 2. | Luis + Lisa | Keep merging |
@@ -43,7 +43,7 @@ record. Conversation never waits on the network.
 
 | Who | P0 only | Stop doing |
 |---|---|---|
-| **Lisa** | Live E2E, delegate → bank, wire `:7777`, Exa fact on card | Hall extraction, second-pass prompts, Auth0 |
+| **Lisa** | Live E2E, delegate → bank, `queue.ts` name-gate patch, Exa fact on card | Hall extraction, second-pass prompts, Auth0 |
 | **Jake** | `upsert`/`log`/`brief` real; seed one demo person | Face embeddings, sighting pipeline |
 | **Luis** | Card + ledger for *this* conversation; script + submit | Second-guest UI, chatbox, polish beyond the card |
 | **Saint** | Stay out of P0. Browser mic is the environment. Glasses if already working. | Face lock as a demo beat |

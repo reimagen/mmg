@@ -35,7 +35,7 @@ Shared types: `web/src/lib/types.ts`. Change those together.
 1. **Client delegation** — GPT Live does not run our tools. Transcripts stay in-app; on `session.delegation.created` hit `POST /api/delegate`; append `session.thinking` / `session.commentary`. Docs: https://developers.openai.com/api/docs/guides/live-delegation?delegation-mode=client
 2. **No video into GPT Live.** Camera is P2 sightings only, never a Live track.
 3. **Browser mic is the environment.** Glasses optional. Demo must run with `Start GPT Live · browser mic`.
-4. **Memory is a sidecar** on `:7777`. `upsert` / `log` / `brief` local only, never behind the hall or Exa. Wire Next to `MEMORY_API_URL` (P0).
+4. **Memory is a sidecar in-process** — SQLite via `node:sqlite` behind `@/lib/memory` (`memory/HANDOFF.md`). `upsert` / `log` / `brief` local only, never behind the hall or Exa. HTTP surface for glasses/Hermes: `/api/memory/*`.
 5. **Realtime never awaits the network.** Exa/treg: timeout + skip. Crash enrichment ≠ crash conversation.
 6. **Privacy:** no stranger camera lookup. Spoken-name capture is the enroll path. Face-rec is P2.
 7. **UI card is verbatim ground truth.** Live voice may paraphrase.
@@ -46,14 +46,13 @@ Shared types: `web/src/lib/types.ts`. Change those together.
 
 ```bash
 cp .env.example web/.env.local          # Next does not read repo-root .env
-pip install -r memory/requirements.txt
-python -m memory.seed && uvicorn memory.api:app --port 7777
+(cd web && npm run seed)                # demo cast → web/data/memory.db
 cd web && npm install && npm run dev    # :3000
 curl localhost:3000/api/health
-python memory/api.py                    # self-check
+(cd web && npm run memory:check)        # memory self-check
 ```
 
-Env: `OPENAI_API_KEY`, `EXA_API_KEY` (UUID or `exa_…`), `OPENROUTER_API_KEY`, `OXEN_API_KEY`, `TREG_TOKEN`, `MEMORY_API_URL=http://127.0.0.1:7777`, `HERMES_ENABLED=0`, `HALL_WS_URL`, `HALL_TOKEN`.
+Env: `OPENAI_API_KEY`, `EXA_API_KEY` (UUID or `exa_…`), `OPENROUTER_API_KEY`, `OXEN_API_KEY`, `TREG_TOKEN`, `MEMORY_BACKEND` (unset = SQLite; `json` = stub), `HERMES_ENABLED=0`, `HALL_WS_URL`, `HALL_TOKEN`.
 
 ## Named orchestration (judges)
 

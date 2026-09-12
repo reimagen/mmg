@@ -17,8 +17,8 @@ Judging: exceptional engineering, robust orchestration, thoughtful failure handl
                      │ session.delegation.created
                      ▼
               ┌──────────────┐
-              │ memory/      │  Jake FastAPI :7777
-              │ sidecar      │  upsert / log / brief   NEVER behind hall
+              │ @/lib/memory │  Jake · SQLite in-process (node:sqlite)
+              │ web/data/*.db│  upsert / log / brief   NEVER behind hall
               └──────┬───────┘
                      │ thinking.append + commentary.append
                      │ (paraphrase — UI card is ground truth)
