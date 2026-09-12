@@ -9,6 +9,11 @@ const db = process.env.MEMORY_DB_PATH ?? join(process.cwd(), "data", "memory.db"
 const { upsertPerson, listPeople, wipe } = await import("../src/lib/memory/sqlite.ts");
 wipe(); // rows, not the file — a running next dev keeps its handle
 
+// Drop wiki pages from earlier runs too, or the folder shows people who are no longer in memory
+// (and old spellings of people who are). The projector story is "this filled up as we met people".
+const { rmSync } = await import("node:fs");
+rmSync(new URL("../data/wiki/who/people", import.meta.url), { recursive: true, force: true });
+
 if (process.argv.includes("--empty")) {
   console.log(`memory cleared → ${db} (0 people; the roster is untouched)`);
 } else {

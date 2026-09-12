@@ -91,10 +91,16 @@ export function lookupRoster(name: string): RosterEntry | null {
   const all = listRoster();
   const exact = all.find((e) => nameKey(e.name) === key);
   if (exact) return exact;
-  // A first name is enough only if exactly one person at this event has it. Two Chrises: neither.
+  // A first name is enough only if it points at one human. "Prashant Pisipati" and "Prashant Pawan
+  // Pisipati" are the same person written twice (the team page and the attendee list), so match on
+  // first + last name and keep the richer row. Two different Aarons stay ambiguous, correctly.
   const firsts = all.filter((e) => nameKey(e.name).split(" ")[0] === key);
   if (firsts.length === 1) return firsts[0];
-  if (firsts.length > 1) return null;
+  if (firsts.length > 1) {
+    const surnames = new Set(firsts.map((e) => nameKey(e.name).split(" ").pop()));
+    if (surnames.size !== 1) return null;
+    return firsts.sort((a, b) => (b.blurb ?? "").length - (a.blurb ?? "").length)[0];
+  }
   const near = all.filter((e) => close(nameKey(e.name).split(" ")[0], key));
   return near.length === 1 ? near[0] : null;
 }
