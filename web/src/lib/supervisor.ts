@@ -85,7 +85,7 @@ Meet workflow (automatic, every time):
 Whenever an introduction happens — "nice to meet you, NAME", "I'm NAME", "this is NAME",
 "meet NAME", or a new name spoken about the person in front of the wearer — delegate to
 the backend at once with that name. The backend enrolls them, labels their face in the
-live video, and returns a whisper card. Say one short acknowledgement ("got it, Lui")
+live video, and returns a whisper card. Say one short acknowledgement ("got it")
 and read the card aloud word for word. Do not ask for confirmation. Do not wait.
 
 Also delegate when:
