@@ -14,9 +14,10 @@ guaranteed, Mentra glasses optional), **banks** who you just met, and
 
 | Ship (P0) | Stretch (P2) |
 |---|---|
-| Spoken-name enroll + fact log + ledger | Second-pass recognition / re-encounter |
-| Killable Exa contact research (Jake) | Face-rec, sightings, glasses HUD |
-| Client delegation + in-process SQLite | Auth0, treg, embeddings, Hermes-from-scratch |
+| Spoken-name enroll (first+last) + fact log + ledger | Face-rec, sightings, glasses HUD |
+| Killable Exa contact research (Jake) | Auth0, treg, embeddings, Hermes-from-scratch |
+| Client delegation + in-process SQLite | `BACKEND_LLM` wiki |
+| 20s spoken-name re-encounter (C4=5) | Roast (cut) |
 
 Do not reopen: no CopilotKit / TriggerDev / Mozilla; no video into GPT Live;
 no stranger camera lookup; no Auth0.
@@ -66,11 +67,11 @@ See [`JUDGING.md`](./JUDGING.md). Short form:
 3. Research returns or skips — sourced line, conversation never waits.
 4. Close on the ledger: person, facts, timestamps.
 
-Roast mode is cut. Second encounter: only if P0 is already on tape.
+Roast mode is cut. Re-encounter is on the tape (C4=5).
 
 ## Open
-- ~~Jake: wire `queue.ts` to `absorbResearch`~~ **done** — real Exa via `researchPerson`, query from detected context, corroboration gate, `Fact.url` provenance.
-- Lisa: first+last name capture; one proof take.
-- Luis: live person + source/ts on `/` (facts now carry `url`; `GET /api/runtime` has health · traces · jobs · the agent's wiki page); projector `/screen.html` is the room TV (not a substitute for Talk).
+- Jake: **research loop coded** — confirm sourced Exa or honest skip on a **full** name in a live Talk.
+- Lisa: first+last enroll via `detect` into `display_name`; two proof takes.
+- Luis: live person + source/ts/url on `/`; hide Recall Jake; health/jobs from `GET /api/runtime`. Projector is the room TV.
 - Saint: Mentra Live is on hardware (`/glasses`); P0 tape stays on `/`.
 - Hermes connect is P1, not a blocker (`ws` is installed).

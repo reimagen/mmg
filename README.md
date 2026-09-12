@@ -5,7 +5,7 @@ guaranteed, glasses optional), **banks** who you just met, and **researches**
 them in the background. Whisper card is the record.
 
 Hackathon: OpenAI Global Hackathon @ The KINN · 2-minute demo.
-**4 hours left — ranked plan:** [`docs/SHIP.md`](./docs/SHIP.md). Live E2E is up (**Talk** / **Hang up**). Memory is Jake SQLite. Exa + tape still open.
+**Ranked plan + directives:** [`docs/SHIP.md`](./docs/SHIP.md) (target **5/5/5/5**). Live E2E is up (**Talk** / **Hang up**). Memory is Jake SQLite. First+last, live ledger, and tape still open.
 
 Team: **Jake** = memory + Exa write-back · **Lisa** = GPT Live / Mac · **Saint** = MentraOS (P2) · **Luis** = UI / demo.
 

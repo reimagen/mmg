@@ -1,22 +1,22 @@
 # AGENTS.md
 
 Hackathon repo: **MMG** — whisper card for the room you’re in. The live agent is **Mac** (Talk / Hang up).
-Read this before editing. Status: [`docs/SHIP.md`](./docs/SHIP.md)
-(critical path vs stretch). Longer briefs live in `docs/`.
+Read this before editing. Status + directives: [`docs/SHIP.md`](./docs/SHIP.md).
+Scoring target is **5 on all four** ([`docs/SCORING.md`](./docs/SCORING.md)).
 
 ## Docs map
 
 | Doc | Use when |
 |---|---|
-| `docs/SHIP.md` | **Start here.** 4-hour rank: P0 bank+research vs P2 second-pass |
+| `docs/SHIP.md` | **Start here.** Team directives + P0/P1/P2 status. Target 20. |
+| `docs/SCORING.md` | 1–5 bars, Now=11, path to each 5, win script |
+| `docs/JUDGING.md` | 2-minute spoken run of show |
 | `docs/PRD.md` | Product, lanes |
 | `docs/ARCHITECTURE.md` | Three loops, failure modes |
 | `docs/context_system_scope.md` | Memory contract (Jake) |
 | `docs/LIVE_LOOP.md` | Measured GPT Live client-delegation loop (LIVE-0002) |
 | `docs/HERMES.md` | Hermes slow plane (P1 — only if hall is already up) |
 | `docs/chief_of_staff_architecture.md` | Hall / Hermes contracts (reference, not the submission) |
-| `docs/JUDGING.md` | 2-minute run of show |
-| `docs/SCORING.md` | 1–5 tracker |
 | `docs/SUBMISSION.md` | Portal fields + eligibility |
 
 ## Lanes — do not collide
@@ -40,7 +40,7 @@ Shared types: `web/src/lib/types.ts`. Change those together.
 6. **Privacy:** no stranger camera lookup. Spoken-name capture is the enroll path. Face-rec is P2.
 7. **UI card is verbatim ground truth.** Live voice may paraphrase.
 8. **Net-new today.** MentraOS / GPT Live / Exa / hall / Hermes *contracts* are building blocks, not the submission.
-9. **Ship path is bank + research, not second-pass recognition.** Hermes is P1 (only if hall is already up). `HERMES_ENABLED=0` keeps local Exa. Auth0 is skip.
+9. **Ship path is bank + research + a 20s spoken-name re-encounter.** Hermes is P1 (only if hall is already up). `HERMES_ENABLED=0` keeps local Exa. Auth0 is skip. Roast is cut.
 
 ## Commands
 

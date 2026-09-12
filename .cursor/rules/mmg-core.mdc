@@ -9,8 +9,8 @@ Social copilot for a live conversation. Not a chatbox. The live agent is **Mac**
 
 Read `docs/SHIP.md` then `AGENTS.md` before nontrivial edits.
 
-P0: Live E2E is up. Remaining: name first/last (Lisa), Exa on card (Jake), tape (Luis+Lisa).
-P2: second-pass recognition, face-rec, glasses HUD, Auth0.
+P0: Live E2E is up. Directives: `docs/SHIP.md`. Target 5s: `docs/SCORING.md`.
+Lisa: first+last enroll + tape. Jake: confirm Exa/skip on a full name. Luis: live ledger + hide Recall Jake. Re-encounter is on the tape (spoken name, not face).
 
 - **Lisa** owns GPT Live (`web/src/lib/live/**`, `/api/session`, `/api/delegate`). Stay out of Exa while Jake has it.
 - **Luis** owns the whisper-card UI (`web/src/app/page.tsx`).

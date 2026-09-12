@@ -1,99 +1,92 @@
-# 4-hour ship — status 2026-09-12 13:41 PDT
+# 4-hour ship — status 2026-09-12 14:02 PDT
 
-**Demo still:** bank the record + contact research, in a live conversation.
+**Team board.** Pull this before you code. Scoring 5-bars: [`SCORING.md`](./SCORING.md).
+2-minute script: [`JUDGING.md`](./JUDGING.md).
+
+**Target: 5 on all four (20).** Now is **11**. 4 is a miss.
+**Demo:** bank the record + contact research + a 20s re-encounter, in a live conversation.
 **P0 environment:** browser mic on `/`. Live agent is **Mac** (**Talk** / **Hang up**).
-**Glasses:** additive. Saint’s Mentra Live client is **on hardware** (`/glasses`);
-do not require it for the video.
-**Projector:** Luis landed `/screen.html`. Room display only. Talk stays on `/`.
-
-Read this before `PRD.md`. Second-pass / face-lock beats are **stretch**.
+**Glasses / projector:** additive. Do not require `/glasses` or `/screen.html` for the tape.
 
 ## What ships
 
-Hear a name in the room → **bank** person + facts on the ledger → **research**
-them in the background (Exa; Hermes if already up) → whisper card shows the
-record. Conversation never waits on the network.
+Hear a name → **bank** person + facts → **research** in the background → whisper card
+is the record → walk off and **come back**, Mac still has them. Conversation never
+waits on the network.
 
 ## Rank + status
 
 | Pri | Item | Status | Owner | Do not |
 |---|---|---|---|---|
-| **P0** | Browser mic → **Talk** → Mac hears/speaks | **Done.** ICE hang fixed; Hang up cuts billing. Voice: `marin`. | Lisa | Typed chat |
-| **P0** | Spoken name → card banks a person | **Done enough to demo** (Mickey enrolled). Surname now captured by `detect.ts` ("nice to meet you, Sam Altman" → `Sam Altman`) — a full name is what makes research resolvable. | Lisa + Jake | Invent people |
-| **P0** | Bank the record: `upsert` / `log` / `brief` | **Done.** In-process SQLite `@/lib/memory` (Jake D17). Seed wipes in place. Not `:7777`. | Jake | Schema from other lanes |
-| **P0** | Contact research: Exa timeout + skip; sourced fact on card | **Done.** `queue.ts` → `researchPerson`; query is built from what they said (`"Ada" Oxen`), results pass a name gate, facts carry `url`. A one-word name with no company banks **nothing** (the first live run returned two unrelated Jakes). Honest skips read "none confidently this person". | Jake | Await Exa on Live |
-| **P0** | Card + ledger show *this* conversation | **Partial.** `/` still operator chrome (seed + live name). Projector `/screen.html` is a bundled room screen — not wired to `/api/memory`. | Luis | Chat composer |
-| **P0** | Detection layer: every turn yields `signals` (name · role · company/project · commitment · ask · contact) | **Done.** On `POST /api/delegate` for both backends; commitments become open threads; signals go into the model prompt. `GET /api/runtime` exposes backend · health · jobs · last 12 traces · the focus person's wiki page for the UI lane. | Jake | Build UI for it |
-| **P0** | Two rehearsals, 2-min video, portal paste | **Open.** Freeze after take 2. | Luis + Lisa | Keep merging |
+| **P0** | Browser mic → **Talk** → Mac hears/speaks | **Done.** ICE hang fixed; Hang up cuts billing. Voice: `marin`. Gen Z prompt shipped. | Lisa | Typed chat |
+| **P0** | Spoken name → card banks **first + last** | **Split.** Jake `detect` captures `Sam Altman`. Lisa’s Live INTRO still enrolls one token into `display_name`. Wire enroll to the name signal. | Lisa | Invent people |
+| **P0** | Bank the record: `upsert` / `log` / `brief` | **Done.** In-process SQLite `@/lib/memory`. | Jake | Schema from other lanes |
+| **P0** | Contact research: sourced Exa **or** honest skip | **Coded.** `queue.ts` → `researchPerson`; query from what they said; name gate; `Fact.url`. Confirm in a Talk on a **full** name. One-word name with no company banks nothing. | Jake | Await Exa on Live |
+| **P0** | Detection `signals` on every delegate | **Done.** name · role · company · commitment · ask · contact. `GET /api/runtime` for the UI lane. | Jake | Building UI for it |
+| **P0** | Card + ledger show *this* conversation (`source` + `ts` + `url`) | **Partial.** `/` is operator chrome. Hide **Recall Jake**. Health/jobs strip for the kill beat. | Luis | Chat composer |
+| **P0** | Kill/skip visible on `/` while Mac keeps talking | Kill API exists; **no on-screen proof** (Jake III). | Luis + Jake | Four failure demos |
+| **P0** | 20s re-encounter (spoken-name recall) | **Required for C4=5.** Not face-rec. | Lisa + Luis | Parking this |
+| **P0** | Two rehearsals, 2-min video, portal | **Open.** Freeze only if all four criteria are 5. | Luis + Lisa | Keep merging after freeze |
 
 | Pri | Item | Status | Owner | Rule |
 |---|---|---|---|---|
-| **P1** | Kill/skip enrichment mid-talk | Open — `/api/enrich` kill exists; rehearse one miss | Jake | Don't demo four failures |
-| **P1** | Hermes `HERMES_ENABLED=1` only if hall `:8768` is up | **Off.** Default `0`. `ws` is now in `web/package.json` (Jake). | Lisa | Live never awaits packets |
-| **P1** | OpenRouter if Live quota dies | **Key is in `web/.env.local`.** Nice-to-have. OpenRouter does **not** ship `gpt-live-1` — cannot replace Mac. Failover not wired. Oxen is the OpenAI-compatible text pool. | Lisa | Don't build a second voice loop unless OpenAI quota dies |
-| **P1** | Projector `/screen.html` | **Landed** (Luis). Use as the room TV. Do not debug it on stage; `/` is the talk. | Luis | Making the projector required |
+| **P1** | Hermes `HERMES_ENABLED=1` only if hall `:8768` is up | **Off.** Extra credit, not the C3=5 plan. `ws` is installed. | Lisa | Live never awaits packets |
+| **P1** | OpenRouter if Live quota dies | Key in `web/.env.local`. **Not GPT Live.** Do not wire a second voice loop. | Lisa | |
+| **P1** | Projector `/screen.html` | **Landed** (Luis, including a later upload). Room TV only if it shows *this* person. | Luis | Making it required |
 
 | Pri | Item | Status |
 |---|---|---|
-| **P2** | Second-pass recognition / re-encounter | **Parked** |
-| **P2** | Mentra Live glasses (`client/mentra`, `/glasses`) | **Hardware live** (Saint). Mic+camera → laptop; Live voice on laptop by default. **Not** the P0 tape. Video is JPEG on delegate (`frame`), never a Live track. |
-| **P2** | Face-rec / sightings from `frame_ref` | Parked — memory/face lane reads `web/data/frames/` |
-| **P2** | Auth0 / login | Skip |
-| **P2** | treg, embeddings, vector store | Exa is enough research |
-| **P2** | LLM-Wiki / `BACKEND_LLM=1` | **On in `web/.env.local`** (Jake) — the model backend banks role/company/commitments the heuristics found. `MEMORY_BACKEND=json` / unset `BACKEND_LLM` rolls back. Wiki pages in `web/data/wiki/who/people/`. |
+| **P2** | Face-rec / sightings from `frame_ref` | Parked |
+| **P2** | Mentra Live (`client/mentra`, `/glasses`) | Hardware live. **Not** the tape environment. JPEG on delegate, never a Live track. |
+| **P2** | Auth0 / treg / embeddings | Skip |
+| **P2** | `BACKEND_LLM=1` wiki | Opt-in. Jake has it on locally. Not the tape default. |
+| **—** | Coach / roast | **Cut.** Mac is Gen Z cheerleader only. |
 
-## Lisa remaining (Live)
+## Directives (next hours)
 
-1. Spoken-name parser: first + last (`Mickey` / `Mouse`), not one token / “new contact.”
-2. Cheerleader / Gen Z Mac prompt is in `LIVE_INSTRUCTIONS` (Hang up → Talk to load).
-3. One proof take with Luis, then video + portal.
-
-Stay out of Exa / SQLite schema / UI chrome / Mentra relay.
-
-`GptLiveClient` now has a **client seam** (`microphone`, `onOutputTrack`, `snapshot`).
-Do not rip it out. Browser `/` still uses default getUserMedia.
-
-## Lane hours (remaining)
-
-| Who | Now | Stop doing |
+| Who | Do now | Stop doing |
 |---|---|---|
-| **Lisa** | Name capture + tape | Exa, Mentra relay, Auth0 |
-| **Jake** | Research is wired (`researchPerson` + gate + `Fact.url`); rehearse the kill-research miss | Face embeddings, and UI — `/api/runtime` is the handoff |
-| **Luis** | Live person on the `/` card + source/ts ledger (`Fact.url` links out now); `GET /api/runtime` gives health · traces · jobs in one call; 4 III findings for `/` in `memory/HANDOFF.md` | Chatbox |
-| **Saint** | Mentra is live; keep it off the P0 tape. Browser `/` is the demo. | Making glasses required |
+| **Lisa** | Enroll first+last via Jake’s `detect` name signal (lowercase ASR). Two proof Talks. Talk track on tape. | Exa, Hermes-from-scratch, OpenRouter Live, roast, Mentra relay |
+| **Jake** | Confirm one sourced Exa **or** honest skip against a **full** name in a live Talk. Rehearse the kill-research miss. `/api/runtime` is the UI handoff. | Face embeddings, wiki as the demo |
+| **Luis** | Live person on `/`; ledger `source`+`ts`+`url`; health/jobs/traces from `GET /api/runtime`; hide Recall Jake. III notes in `memory/HANDOFF.md`. | Chat composer, making `/screen.html` required |
+| **Saint** | Off the tape unless a 5s “same agent, glasses optional” cut. | Making glasses the environment |
 
-## Demo beats (2 min) — P0 only
+Stay in lane. Shared types: `web/src/lib/types.ts`.
 
-0:00 Browser `/` — **Talk**  
-0:20 Spoken intro (“nice to meet you, NAME”) → card banks them  
-0:50 Talk → a fact lands on the card/ledger  
-1:10 Research returns (or skip) → sourced line on the card  
-1:40 One failure: kill enrichment *or* “no glasses, same agent”  
-1:50 Ledger close on `/` (projector only if it shows *this* person) — freeze  
+## Win script (2:00)
 
-If glasses or `/screen.html` flake: same Mac on `/`. Do not debug Mentra or the bundle on stage.
+Canonical copy: [`SCORING.md`](./SCORING.md) (bars) · [`JUDGING.md`](./JUDGING.md) (spoken lines).
 
-Second-person recall is **cut**. Roast mode is **cut** — Mac is Gen Z cheerleader only.
+0:00 `/` **Talk** — *“A chatbox is too late.”*  
+0:15 “Nice to meet you, FIRST LAST. I run X at Y.”  
+0:35 Card banks full name; Mac reads it verbatim  
+0:50 Fact + sourced Exa (or skip)  
+1:10 Kill research *or* no glasses, same Mac  
+1:25 Leave / come back / say the name — remembered card  
+1:45 Ledger close — freeze  
+1:55 Hang up
+
+If glasses or `/screen.html` flake: stay on `/`.
 
 ## Named orchestration (say it)
 
 **Client delegation + local memory (fast) + killable research queue (slow).**
 
-Memory is SQLite in-process behind `@/lib/memory` (Jake D17). FastAPI `:7777` is retired.
+Memory is SQLite in-process behind `@/lib/memory`. FastAPI `:7777` is retired.
 Hermes/hall is the *same* slow plane when plugged in. `HERMES_ENABLED=0` is default.
 
 Measured (LIVE-0002): delegation ~0.9 s; local Exa is the 1–3 s fast lane;
-a Hermes room turn is ~17 s. Append spoken results only after output-transcript
-idle. Details: [`LIVE_LOOP.md`](./LIVE_LOOP.md). Glasses: [`client/mentra/README.md`](../client/mentra/README.md).
+a Hermes room turn is ~17 s. [`LIVE_LOOP.md`](./LIVE_LOOP.md). Glasses: [`client/mentra/README.md`](../client/mentra/README.md).
 
 ## Already decided — do not reopen
 
 - No Auth0
 - No CopilotKit / TriggerDev / Mozilla
-- **No video into GPT Live.** Camera may snapshot onto `POST /api/delegate` as `frame` (P2). Never a Live media track.
+- **No video into GPT Live.** Camera may snapshot onto `POST /api/delegate` as `frame`. Never a Live media track.
 - No stranger camera lookup
 - Client delegation (not Responses)
-- Second-pass recognition is stretch
-- Secrets in `web/.env.local` only
-- Live voice is **marin**; personality is Gen Z cheerleader (`LIVE_INSTRUCTIONS`). No coach/roast toggle.
+- Live voice is **marin**; personality is Gen Z cheerleader. No coach/roast
 - P0 demo is **browser mic**, even if glasses work
+- Secrets in `web/.env.local` only
+- OpenRouter / Oxen are text-only — neither has `gpt-live-1`
+- Re-encounter on tape is spoken-name recall, not face-rec

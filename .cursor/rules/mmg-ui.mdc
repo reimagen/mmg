@@ -12,6 +12,6 @@ The panel is the judge-facing HUD and the no-glasses environment.
 - Live controls sit under the card: **Talk** (idle) and **Hang up** (listening). Hang up also hits `POST /api/session/hangup`.
 - Memory ledger: people, facts, timestamps, source. No bystander transcripts.
 - Do not add a typed chat composer — that scores us as a wrapper (criterion 2).
-- Second-pass / “ask about X on re-encounter” is P2. No coach/roast toggle — Mac is Gen Z cheerleader only.
+- Re-encounter is on the 2-min tape (spoken name, remembered card). No coach/roast toggle — Mac is Gen Z cheerleader only.
 
 Keep copy short. The card is verbatim ground truth; audio may paraphrase.

@@ -2,8 +2,8 @@
 
 Track 1–5 in [`SCORING.md`](./SCORING.md). Ranked plan: [`SHIP.md`](./SHIP.md).
 
-**Video proves:** live conversation → bank a contact → research them.
-Second-pass recognition is **not** in this script.
+**Video proves:** live conversation → bank a contact → research them → **remember them**.
+Target is **5 on all four** ([`SCORING.md`](./SCORING.md)).
 
 ## 1. Core Requirements & Functionality
 
@@ -55,14 +55,15 @@ Do not spend the 2 minutes on face-miss, quota failover, and hall packets.
 | Memory ledger | Person, facts, timestamps — close shot |
 | Consent | Spoken-name enroll; no stranger camera lookup |
 
-The agent **does** enroll, log, brief, and enrich. It does **not** dump bystander
-transcripts. Second-person recall is optional if time. Roast mode is cut.
+The agent **does** enroll, log, brief, enrich, and **recall by spoken name**.
+It does **not** dump bystander transcripts. Roast mode is cut. Re-encounter is on the tape (C4=5).
 
 ## 2-minute run of show
 
-0:00 Browser mic — **Talk** — *C1, environment*  
-0:20 Spoken intro — card banks them — *C2 + C4*  
-0:50 Talk, fact lands on ledger — *agentic, not Q&A*  
-1:10 Research line (or honest skip) — *slow plane*  
-1:35 One failure beat (no glasses *or* kill Exa) — *C3*  
-1:50 Ledger close — freeze (`/` ; `/screen.html` only if it shows this person)
+0:00 `/` **Talk** — *“A chatbox is too late.”* — *C1 + C2*  
+0:15 Spoken intro, first **and** last + one fact — *C1 enroll*  
+0:35 Card banks them; Mac reads it verbatim — *C4*  
+0:50 Research line (or honest skip) — *C3 slow plane*  
+1:10 Kill enrichment *or* no glasses, same Mac — *C3 failure*  
+1:25 Re-encounter: say the name, remembered card — *C4=5*  
+1:45 Ledger close (source + ts) — freeze
