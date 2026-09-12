@@ -1,6 +1,7 @@
 import { listPeople } from "@/lib/memory";
 import { recentInteractions } from "@/lib/memory/sqlite.ts";
 import { renderPersonPage } from "@/lib/memory/wiki.ts";
+import type { Signal } from "@/lib/types";
 
 /**
  * System prompt for the delegation backend — the LLM-Wiki keeper.
@@ -28,14 +29,24 @@ Answer with JSON: { "card": string, "say": string, "person_id": string | null }.
 - person_id: the person in focus, or null if nobody was identified.
 If no one is identified, do not call tools. Never claim memory that a tool did not return.`;
 
-export async function buildInstructions(lastPersonId?: string) {
+export async function buildInstructions(lastPersonId?: string, signals: Signal[] = []) {
   const people = await listPeople();
   const index = people.length
     ? people.map((p) => `- ${p.display_name} (${p.id}) — ${p.facts.length} facts`).join("\n")
     : "- (empty)";
   const focus = lastPersonId ? people.find((p) => p.id === lastPersonId) : undefined;
   const page = focus ? renderPersonPage(focus, recentInteractions(focus.id)) : "(no one in focus yet)";
+  // The detection layer already read the turn; handing the model its findings stops it
+  // from re-deriving them and from dropping a role or employer it should have banked.
+  const detected = signals.length
+    ? signals.map((s) => `- ${s.kind}: ${s.value}  (heard: "${s.text}")`).join("\n")
+    : "- (nothing)";
   return `${KEEPER_RULES}
+
+## Detected in this turn (heuristics — verify against the transcript, bank what is true)
+${detected}
+Facts worth banking usually come straight from these: a role, an employer or project,
+a commitment (→ follow_ups), a correction to a name already on file.
 
 ## who/people/index.md
 ${index}

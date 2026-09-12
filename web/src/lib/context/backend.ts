@@ -6,6 +6,7 @@ import { brief, listPeople } from "@/lib/memory";
 import type { DelegateRequest, DelegateResult } from "@/lib/live/types";
 import type { Person } from "@/lib/types";
 import { buildInstructions } from "./prompt";
+import { detect } from "@/lib/memory/detect";
 
 /**
  * Model-driven delegation backend (context system). Same contract as handleClientDelegation;
@@ -38,6 +39,7 @@ export async function runBackend(req: DelegateRequest): Promise<DelegateResult> 
 
 async function withModel(req: DelegateRequest, key: string): Promise<DelegateResult> {
   const trace: string[] = [];
+  const signals = detect(req.transcripts.filter((t) => t.role === "user").slice(-3).map((t) => t.text).join(" "));
   let person: Person | null = null;
   let previous: string | undefined;
   let input: unknown[] = [
@@ -56,7 +58,7 @@ async function withModel(req: DelegateRequest, key: string): Promise<DelegateRes
       signal: AbortSignal.timeout(ROUND_MS),
       body: JSON.stringify({
         model: MODEL,
-        instructions: await buildInstructions(person?.id ?? req.last_person_id),
+        instructions: await buildInstructions(person?.id ?? req.last_person_id, signals),
         input,
         previous_response_id: previous,
         tools: BACKEND_TOOLS,

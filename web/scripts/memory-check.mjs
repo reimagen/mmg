@@ -47,16 +47,19 @@ assert.equal(m2.listPeople().length, 2, "rows persist after reopen");
 
 // F3 enrich
 assert.equal(e.researchQuery({ ...ada, facts: [ada.facts[0]] }), "", "bare first name + boilerplate only → unqueryable");
-assert.ok(e.researchQuery(ada2).startsWith('"Ada" I run growth'), e.researchQuery(ada2));
+assert.equal(e.researchQuery(ada2), '"Ada" Oxen growth', "detected employer beats raw transcript keywords");
+// a bare first name with no corroborating context banks nothing
+assert.deepEqual(e.absorbResearch(ada2, [{ title: "Ada Lovelace", url: "https://x.com/a", text: "Ada was a mathematician" }]), [], "first name alone is not identity");
 const facts = e.absorbResearch(ada2, [
   { title: "Bob Smith joins Acme", url: "https://x.com/a", text: "Bob Smith is new." },
   { title: "Ada on growth", url: "https://blog.oxen.ai/ada-growth/", highlights: ["Ada leads growth at Oxen. She ships weekly."] },
   { title: "Ada again", url: "https://blog.oxen.ai/ada-growth/", text: "Ada dup url" },
   { title: "Ada 2", url: "https://y.com/2", text: "Ada two" },
   { title: "Ada 3", url: "https://y.com/3", text: "Ada three" },
-]);
-assert.equal(facts.length, 2, "wrong person dropped, dup url dropped, capped at 2");
-assert.equal(facts[0].text, "Ada on growth — Ada leads growth at Oxen. — blog.oxen.ai/ada-growth");
+], "exa", "2026-09-12T21:00:00.000Z", ["Oxen"]);
+assert.equal(facts[0].text, "Ada on growth — Ada leads growth at Oxen.");
+assert.equal(facts.length, 1, "only the Oxen-corroborated result survives the gate");
+assert.equal(facts[0].url, "https://blog.oxen.ai/ada-growth/", "the fact carries its source link");
 assert.equal(facts[0].source, "exa");
 
 // LLM-Wiki projection
@@ -66,6 +69,31 @@ assert.ok(page.startsWith("---\ntype: person\n"), "aDNA frontmatter");
 assert.ok(page.includes("- I run growth at Oxen and we ship weekly _(live,"), "fact with source");
 assert.ok(readFileSync(join(dir, "wiki", "who", "people", "index.md"), "utf8").includes("[[ada]]"), "index links page");
 assert.ok(existsSync(join(dir, "wiki", "CLAUDE.md")), "keeper CLAUDE.md seeded");
+
+// Detection layer
+const d = await import("../src/lib/memory/detect.ts");
+const sig = d.detect("Hey Mac, nice to meet you, Ada. I'm a founder at Oxen and I'll send you the deck. What do you work on? ada@oxen.ai");
+const kinds = (k) => sig.filter((x) => x.kind === k).map((x) => x.value);
+assert.deepEqual(kinds("name"), ["Ada"], JSON.stringify(sig));
+assert.ok(kinds("role")[0].startsWith("founder"), JSON.stringify(kinds("role")));
+assert.deepEqual(kinds("company"), ["Oxen"]);
+assert.equal(kinds("contact")[0], "ada@oxen.ai");
+assert.equal(kinds("ask").length, 1, "one question detected");
+assert.ok(kinds("commitment")[0].includes("send you the deck"));
+assert.deepEqual(d.detect(""), [], "empty turn detects nothing");
+assert.deepEqual(d.detect("yeah totally").filter((x) => x.kind !== "company"), [], "small talk banks nothing");
+assert.equal(d.signalsToMemory(sig).company, "Oxen");
+// commitments become open threads through the memory seam
+const bo = m.upsertPerson({ display_name: "Bo" });
+m.logInteraction({ person_id: bo.id, transcript_ref: "live:t9", extracted_facts: ["I'll intro you to the Mentra team next week"] });
+assert.ok(m.recall({ name: "Bo" }).open_threads.some((t) => t.includes("intro you to the Mentra team")), "commitment → open thread");
+// research query prefers the detected employer
+const ada3 = m.upsertPerson({ display_name: "Ada", facts: [{ text: "I'm a founder at Oxen", source: "live", ts: "2026-09-12T21:00:00.000Z" }] });
+assert.equal(e.researchQuery(ada3), '"Ada" Oxen founder', e.researchQuery(ada3));
+// III F9: recall does not touch last_seen
+const before = m.recall({ name: "Bo" }).last_seen;
+await new Promise((r) => setTimeout(r, 5));
+assert.equal(m.recall({ name: "Bo" }).last_seen, before, "recall is a read, not an encounter");
 
 rmSync(dir, { recursive: true });
 console.log("memory:check OK");

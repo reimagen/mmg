@@ -1,4 +1,4 @@
-import type { Person } from "../types";
+import type { Person, Signal } from "../types";
 
 export type TranscriptTurn = {
   role: "user" | "assistant";
@@ -21,6 +21,8 @@ export type DelegateResult = {
   card: string;
   person: Person | null;
   miss: boolean;
+  /** What the detection layer heard this turn — shown in the runtime rail, always present. */
+  signals?: Signal[];
   /** Where the delegation frame was saved (web/data/frames/<delegation_id>.jpg), when one was sent. */
   frame_ref?: string;
 };

@@ -11,6 +11,8 @@ export type Fact = {
   text: string;
   source: FactSource;
   ts: string;
+  /** Where a researched fact came from. Set for source "exa" / "treg"; absent for heard facts. */
+  url?: string;
 };
 
 export type Person = {
@@ -33,6 +35,18 @@ export type Interaction = {
   transcript_ref: string;
   extracted_facts: string[];
   follow_ups: string[];
+};
+
+/** What the detection layer noticed in a heard turn (web/src/lib/memory/detect.ts). */
+export type SignalKind = "name" | "role" | "company" | "commitment" | "ask" | "contact" | "correction";
+
+export type Signal = {
+  kind: SignalKind;
+  /** The extracted value: a name, a company, the commitment itself. */
+  value: string;
+  /** The span it came from, for showing the operator why. */
+  text: string;
+  confidence: number;
 };
 
 export type WhisperCard = {

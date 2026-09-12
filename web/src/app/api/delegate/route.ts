@@ -4,8 +4,14 @@ import { NextResponse } from "next/server";
 import { handleClientDelegation } from "@/lib/live/delegation";
 import { runBackend } from "@/lib/context/backend";
 import type { DelegateRequest } from "@/lib/live/types";
+import { detect } from "@/lib/memory/detect";
+import { recordTrace, traceOf } from "@/lib/context/runtime";
 
 const FRAMES_DIR = join(process.cwd(), "data", "frames");
+
+function userText(body: DelegateRequest) {
+  return body.transcripts.filter((t) => t.role === "user").slice(-3).map((t) => t.text).join(" ");
+}
 
 /** Client seam: every client sends the latest frame of its live video source; keep it beside the id for the face/memory lane. */
 function saveFrame(delegationId: string, dataUrl: string): string | undefined {
@@ -26,7 +32,13 @@ export async function POST(request: Request) {
     // BACKEND_LLM=1 → model-driven backend (context system); else Lisa's regex path.
     const handle = process.env.BACKEND_LLM === "1" ? runBackend : handleClientDelegation;
     const frame_ref = body.frame ? saveFrame(body.delegation_id, body.frame) : undefined;
-    return NextResponse.json({ ...(await handle(body)), frame_ref });
+    // Detection is backend-independent: the operator sees what was heard even if memory misses.
+    const heard = userText(body);
+    const signals = detect(heard);
+    const started = Date.now();
+    const result = { signals, ...(await handle(body)), frame_ref };
+    recordTrace(traceOf({ delegation_id: body.delegation_id, heard }, result, signals, Date.now() - started));
+    return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json(
       {

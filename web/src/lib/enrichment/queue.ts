@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import type { EnrichmentJob } from "../types";
 import { hallSend, hallStop, hermesEnabled } from "../hall/client";
 import { listPeople, upsertPerson } from "../memory";
+import { researchPerson } from "../memory/enrich";
 import { patchHealth } from "../supervisor";
 
 /**
@@ -70,33 +71,19 @@ async function run(job: EnrichmentJob) {
   job.status = "running";
   patchHealth({ enrichment: "running" });
   try {
-    const result =
-      job.source === "treg"
-        ? await withTimeout(callTreg(job.query), TIMEOUT_MS)
-        : await withTimeout(callExa(job.query), TIMEOUT_MS);
-
-    if (!result) {
+    // Jake's lane owns the research loop end to end (query from detected context → name gate →
+    // structured facts with their source URL). See memory/HANDOFF.md.
+    const person = (await listPeople()).find((p) => p.id === job.person_id);
+    if (!person) {
       job.status = "skipped";
-      job.result = "timeout or missing key — skipped";
+      job.result = "person vanished before research ran";
       return;
     }
-
-    job.status = "done";
-    job.result = result;
-    const people = await listPeople();
-    const person = people.find((p) => p.id === job.person_id);
-    if (person) {
-      await upsertPerson({
-        id: person.id,
-        display_name: person.display_name,
-        facts: [
-          {
-            text: `[${job.source}] ${result.slice(0, 240)}`,
-            source: job.source,
-            ts: new Date().toISOString(),
-          },
-        ],
-      });
+    const research = await researchPerson(person, job.source);
+    job.status = research.status;
+    job.result = research.note;
+    if (research.facts.length) {
+      await upsertPerson({ id: person.id, display_name: person.display_name, facts: research.facts });
     }
   } catch (error) {
     job.status = "failed";

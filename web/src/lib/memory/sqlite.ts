@@ -3,6 +3,7 @@ import { mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { randomUUID } from "node:crypto";
 import { writeIndex, writePersonPage } from "./wiki.ts";
+import { detect, signalsToMemory } from "./detect.ts";
 import type {
   Fact,
   Interaction,
@@ -125,11 +126,9 @@ function find(query: RecallQuery): Person | null {
 /** Reads never throw (miss or broken DB → null / []). Writes rethrow so the delegate route's catch shows "Memory skipped". */
 export function recall(query: RecallQuery): Person | null {
   try {
-    const hit = find(query);
-    if (!hit) return null;
-    hit.last_seen = nowIso();
-    save(hit);
-    return hit;
+    // III F9: a lookup is not an encounter. last_seen is written by upsertPerson / logInteraction only,
+    // so browsing the ledger can't reorder it or claim someone was seen.
+    return find(query);
   } catch (error) {
     console.error("[memory] recall failed", error);
     return null;
@@ -191,8 +190,11 @@ export function logInteraction(input: LogInteractionInput): Interaction {
       person.facts,
       absorbFacts(person, interaction.extracted_facts, "live", interaction.ts),
     );
-    if (interaction.follow_ups.length) {
-      person.open_threads = [...new Set([...person.open_threads, ...interaction.follow_ups])];
+    // Processing: a heard commitment is an open thread even when the caller didn't pass one.
+    const detected = signalsToMemory(detect(interaction.extracted_facts.join(". ")));
+    const threads = [...interaction.follow_ups, ...detected.follow_ups];
+    if (threads.length) {
+      person.open_threads = [...new Set([...person.open_threads, ...threads])].slice(0, 8);
     }
     person.last_seen = interaction.ts;
     save(person);
@@ -240,6 +242,8 @@ export function listPeople(): Person[] {
   }
 }
 
+const MAX_FACTS = 12;
+
 /** F2: clean heard utterances into facts — strip intro phrase, trim, drop < 12 chars, drop name-only, cap 180. */
 export function absorbFacts(
   person: Pick<Person, "display_name">,
@@ -263,6 +267,7 @@ export function absorbFacts(
   return out;
 }
 
+/** ponytail: newest-kept cap so a long conversation can't grow the card, the page, or the prompt without bound. */
 function mergeFacts(existing: Fact[], incoming: Fact[]): Fact[] {
   const seen = new Set(existing.map((f) => f.text.toLowerCase()));
   const merged = [...existing];
@@ -272,5 +277,5 @@ function mergeFacts(existing: Fact[], incoming: Fact[]): Fact[] {
     seen.add(key);
     merged.push(fact);
   }
-  return merged;
+  return merged.length > MAX_FACTS ? merged.slice(merged.length - MAX_FACTS) : merged;
 }

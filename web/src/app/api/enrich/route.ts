@@ -16,12 +16,10 @@ export async function POST(request: Request) {
     killEnrichment();
     return NextResponse.json({ killed: true, jobs: listJobs() });
   }
-  if (!body.person_id || !body.query) {
-    return NextResponse.json(
-      { error: "person_id and query required" },
-      { status: 400 },
-    );
+  if (!body.person_id) {
+    return NextResponse.json({ error: "person_id required" }, { status: 400 });
   }
-  const job = enqueueEnrichment(body.person_id, body.query, body.source ?? "exa");
+  // query is a human label; researchPerson builds the real query from the person's detected context.
+  const job = enqueueEnrichment(body.person_id, body.query ?? body.person_id, body.source ?? "exa");
   return NextResponse.json(job, { status: 202 });
 }
