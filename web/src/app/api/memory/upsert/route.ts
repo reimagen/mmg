@@ -7,5 +7,5 @@ export async function POST(request: Request) {
   if (!body.display_name) {
     return NextResponse.json({ error: "display_name required" }, { status: 400 });
   }
-  return NextResponse.json(upsertPerson(body));
+  return NextResponse.json(await upsertPerson(body));
 }

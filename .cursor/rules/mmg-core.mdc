@@ -5,7 +5,7 @@ alwaysApply: true
 
 # MMG
 
-Social copilot for a live conversation. Not a chatbox.
+Social copilot for a live conversation. Not a chatbox. The live agent is **Mac**.
 
 Read `docs/SHIP.md` then `AGENTS.md` before nontrivial edits.
 

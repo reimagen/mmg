@@ -14,6 +14,7 @@ export function liveSessionConfig() {
   return {
     model: "gpt-live-1",
     instructions: LIVE_INSTRUCTIONS[getMode()],
+    audio: { output: { voice: "marin" } },
     delegation: { type: "client" as const },
   };
 }

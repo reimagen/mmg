@@ -12,7 +12,6 @@ Do not stand up hall from scratch in the remaining hours.
 - `HERMES_ENABLED=0` (default): local Exa/treg queue.
 - `1` + `HALL_WS_URL`: `send("research", text)` fire-and-forget. Ack = row stored, not "research done."
 - Hall down → same local queue. Conversation continues.
-- Inbound packets: 5 fields `state·say·did·need·next`. UI card = verbatim `say`. Voice may paraphrase. `consumed` only after the card is on screen.
-- Room titles must be `room:<name>` on the Hermes side (`room:research` = Exa).
-- Do not fetch `/hall/briefing` inside a Live turn (~18 s).
-- Building block, not the submission. Plan: `docs/HERMES.md`.
+- On `packet`: paint `say` on the card; `commentary.append` only after output-transcript idle (LIVE-0002). UI card is verbatim. `consumed` after the card is on screen.
+- Never send to room `cos`. Use `research`.
+- Building block, not the submission. Plan: `docs/HERMES.md`. Loop: `docs/LIVE_LOOP.md`.

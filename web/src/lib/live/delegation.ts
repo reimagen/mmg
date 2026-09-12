@@ -4,21 +4,36 @@ import { getMode } from "@/lib/supervisor";
 import type { Person } from "@/lib/types";
 import type { DelegateRequest, DelegateResult, TranscriptTurn } from "./types";
 
-const INTRO = /nice to meet you[, ]+([A-Za-z][a-zA-Z-]+)/i;
+const INTRO =
+  /(?:nice to meet you|my name is|i am|i'm|this is)[, ]+([A-Za-z][A-Za-z'-]{1,30})/i;
+const STOP = new Set([
+  "going",
+  "here",
+  "just",
+  "with",
+  "the",
+  "this",
+  "that",
+  "from",
+  "meeting",
+  "you",
+  "mac",
+  "hey",
+]);
 
-export function handleClientDelegation(req: DelegateRequest): DelegateResult {
+export async function handleClientDelegation(req: DelegateRequest): Promise<DelegateResult> {
   const userText = recentUserText(req.transcripts);
-  const person = resolvePerson(userText, req);
+  const person = await resolvePerson(userText, req);
   const mode = getMode();
 
   if (!person) {
     return {
       delegation_id: req.delegation_id,
       thinking:
-        "No enrolled match. Capture a spoken name. Do not look up faces of strangers.",
+        "No name banked yet. Capture a spoken name. Do not look up faces of strangers.",
       commentary:
-        "I don't have them yet. If they say their name, I'll remember it.",
-      card: "Unknown. Say “nice to meet you, NAME.”",
+        "I'm Mac. Say a name and I'll bank it.",
+      card: "Listening. Say “nice to meet you, NAME.”",
       person: null,
       miss: true,
     };
@@ -26,28 +41,32 @@ export function handleClientDelegation(req: DelegateRequest): DelegateResult {
 
   const facts = extractFacts(userText, person.display_name);
   if (facts.length) {
-    logInteraction({
+    await logInteraction({
       person_id: person.id,
       transcript_ref: `live:${req.delegation_id}`,
       extracted_facts: facts,
     });
+    person.facts = [
+      ...person.facts,
+      ...facts.map((text) => ({
+        text,
+        source: "live" as const,
+        ts: new Date().toISOString(),
+      })),
+    ];
   }
 
   enqueueEnrichment(person.id, person.display_name, "exa");
 
-  const whisper = brief(person.id);
+  const whisper = await brief(person.id);
   const thinking = [
     `Person: ${person.display_name} (${person.id})`,
-    `Enrolled: ${person.enrolled}`,
     `Facts: ${person.facts.map((f) => f.text).join("; ") || "none"}`,
-    `Open threads: ${person.open_threads.join("; ") || "none"}`,
     `Whisper card: ${whisper}`,
   ].join("\n");
 
   const commentary =
-    mode === "roast"
-      ? roastLine(person, whisper)
-      : whisper;
+    mode === "roast" ? roastLine(person, whisper) : whisper;
 
   return {
     delegation_id: req.delegation_id,
@@ -59,8 +78,8 @@ export function handleClientDelegation(req: DelegateRequest): DelegateResult {
   };
 }
 
-function resolvePerson(userText: string, req: DelegateRequest): Person | null {
-  const intro = userText.match(INTRO)?.[1];
+async function resolvePerson(userText: string, req: DelegateRequest): Promise<Person | null> {
+  const intro = spokenName(userText);
   if (intro) {
     return upsertPerson({
       display_name: capitalize(intro),
@@ -76,21 +95,28 @@ function resolvePerson(userText: string, req: DelegateRequest): Person | null {
   }
 
   if (req.face_ref) {
-    const byFace = recall({ face_ref: req.face_ref });
+    const byFace = await recall({ face_ref: req.face_ref });
     if (byFace) return byFace;
   }
 
   const name = guessName(userText);
   if (name) {
-    const byName = recall({ name });
+    const byName = await recall({ name });
     if (byName) return byName;
   }
 
   if (req.last_person_id) {
-    return listPeople().find((p) => p.id === req.last_person_id) ?? null;
+    const people = await listPeople();
+    return people.find((p) => p.id === req.last_person_id) ?? null;
   }
 
   return name ? recall({ name }) : null;
+}
+
+function spokenName(text: string) {
+  const match = text.match(INTRO)?.[1];
+  if (!match || STOP.has(match.toLowerCase())) return null;
+  return match;
 }
 
 function recentUserText(transcripts: TranscriptTurn[]) {

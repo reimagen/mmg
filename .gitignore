@@ -21,6 +21,7 @@ web/data/*.json
 npm-debug.log*
 .overlay-stash/
 .merge-overlay/
+web/.live-open.json
 # Keep committed Cursor rules; ignore local Cursor junk only
 .cursor/**
 !.cursor/rules/

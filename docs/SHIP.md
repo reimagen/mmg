@@ -66,6 +66,10 @@ Roast and second-person recall are **cut** unless P0 is already on tape.
 Hermes/hall is the *same* slow plane when plugged in. Do not imply Hermes is
 required for the video. `HERMES_ENABLED=0` is the default ship path.
 
+Measured (LIVE-0002): delegation ~0.9 s; local Exa is the 1–3 s fast lane;
+a Hermes room turn is ~17 s. Append spoken results only after output-transcript
+idle. Details: [`LIVE_LOOP.md`](./LIVE_LOOP.md).
+
 ## Already decided — do not reopen
 
 - No Auth0

@@ -8,6 +8,6 @@ export async function GET() {
     team: "MMG",
     mode: getMode(),
     health: getHealth(),
-    people: listPeople().length,
+    people: (await listPeople()).length,
   });
 }

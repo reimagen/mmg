@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { handleClientDelegation } from "@/lib/live/delegation";
 import type { DelegateRequest } from "@/lib/live/types";
 import { handleClientDelegation } from "@/lib/live/delegation";
 
@@ -8,7 +9,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "delegation_id required" }, { status: 400 });
   }
   try {
-    return NextResponse.json(handleClientDelegation(body));
+    return NextResponse.json(await handleClientDelegation(body));
   } catch (error) {
     return NextResponse.json(
       {

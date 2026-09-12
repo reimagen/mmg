@@ -9,7 +9,7 @@ alwaysApply: false
 The panel is the judge-facing HUD and the no-glasses environment.
 
 - Hero is the whisper card (name, banked facts, one research line).
-- Header shows `glasses` vs `browser`. Start button: `Start GPT Live · browser mic`.
+- Live controls sit under the card: **Talk** (idle) and **Hang up** (listening). Hang up also hits `POST /api/session/hangup`.
 - Memory ledger: people, facts, timestamps, source. No bystander transcripts.
 - Do not add a typed chat composer — that scores us as a wrapper (criterion 2).
 - Second-pass / “ask about X on re-encounter” is P2. Coach/roast is P1.

@@ -2,48 +2,49 @@
 
 **Rank:** [`SHIP.md`](./SHIP.md). Contact research **ships on local Exa**.
 Flip Hermes on only if hall `:8768` is already running. Do not stand up hall
-or `hermes serve` from scratch in the remaining 4 hours.
+or `hermes serve` from scratch in the remaining hours.
 
 Hermes is not on the Live path. Memory stays a sidecar. Full contract:
 [`chief_of_staff_architecture.md`](./chief_of_staff_architecture.md).
+Measured loop: [`LIVE_LOOP.md`](./LIVE_LOOP.md) (delegation ~0.9 s, Hermes ~17 s).
 
 ```
 GPT Live (client del.)     memory :7777
-        │                        ▲ notes (next recall)
-        │ send("research", …)    │
-        ▼                        │
-   hall :8768  ──Dispatch──►  hermes serve
-   packets ◄── emit_handoff ──  room:research (Exa)
+        │ thinking.append now
+        │ send("research") P1
+        ▼
+   hall :8768  ──►  hermes serve  (~17 s)
+   packet say  ──►  wait output-transcript idle
         │
-        ▼  thinking/commentary append  (paraphrase)
-   whisper card = verbatim SAY
+        ▼  commentary.append (verbatim instruction)
+   whisper card = ground truth
 ```
+
+Local Exa is the **fast lane (1–3 s)** with the same append gate. That is the ship path.
 
 ## Why Hermes
 
 Judges want orchestration + failure handling. The hall already has durable
 outbox, replay, `consumed` ownership, and fail-closed `emit_handoff`. Hermes
-is the process that actually runs `room:research` (Exa/treg) and any later
-rooms. Today’s in-process Exa queue is the **same slow plane** with the hall
-unplugged.
+runs `room:research`. Local Exa is that lane with the hall unplugged.
 
-## Connect checklist (Lisa + whoever has hermes-agent)
+## Connect checklist (P1 — hall already up)
 
-1. Run hall on `:8768` (Bearer token). Run `hermes serve` with room sessions.
-2. Room titles **must** start with `room:` or `emit_handoff` is gated off.
-3. From MMG, fire-and-forget `send(room, text)` — do **not** await the packet
-   before Live speaks. Ack = row stored, not “research done.”
-4. On `packet`: show `say` on the UI card; `session.commentary.append` may
-   paraphrase. Send `consumed` only after the card is on screen.
-5. Hermes tools POST notes to Jake’s memory (`upsert` / fact with `source: exa`).
-6. If hall/Hermes is down: keep the in-process Exa queue; conversation continues.
+1. Hall `:8768` + `hermes serve` on the **emit_handoff** build (stale daemon = no packet).
+2. Room titles **must** start with `room:`. MMG uses `research`. **Never `cos`.**
+3. `send(room, text)` fire-and-forget. Ack ~20 ms = row stored, not “research done.”
+4. On `packet`: paint `say` on the UI card. `commentary.append` only after
+   **output-transcript idle** (appending during the bridge sentence is swallowed).
+   Instruction: read results word for word. `consumed` after the card is on screen.
+5. Hermes tools POST notes to Jake’s memory (`source: exa`).
+6. Hall down → local Exa. Conversation continues.
 
 ## Rooms we will use
 
 | Room | Job |
 |---|---|
 | `research` | Exa + treg enrichment for a person |
-| (later) `cos` | optional briefing — **never** prefetch inside a Live turn (~18 s) |
+| `cos` | **Do not use** in the demo (~18 s briefing; durable history) |
 
 ## Env
 

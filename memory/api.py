@@ -17,17 +17,56 @@ def db():
     c.executescript((Path(__file__).parent / "schema.sql").read_text())
     return c
 
+def _iso(ts) -> str:
+    if not ts:
+        return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(float(ts)))
+
+def _norm_facts(raw) -> list:
+    allowed = {"live", "enrollment", "exa", "treg", "manual"}
+    out = []
+    for f in json.loads(raw or "[]"):
+        src = str(f.get("source") or "live")
+        if src not in allowed:
+            src = "exa" if "exa" in src else "live"
+        ts = f.get("ts")
+        if isinstance(ts, (int, float)):
+            ts = _iso(ts)
+        out.append({"text": f.get("text", ""), "source": src, "ts": ts or _iso(time.time())})
+    return out
+
+def _person(row) -> dict:
+    return {
+        "id": row["id"],
+        "display_name": row["display_name"],
+        "aliases": json.loads(row["aliases_json"] or "[]"),
+        "face_ref": row["face_ref"],
+        "enrolled": bool(row["face_ref"]),
+        "first_met": {
+            "event": row["first_met_event"] or "hackathon floor",
+            "ts": _iso(row["first_met_ts"]),
+        },
+        "facts": _norm_facts(row["facts_json"]),
+        "open_threads": json.loads(row["open_threads_json"] or "[]"),
+        "last_seen": _iso(row["last_seen_ts"]),
+    }
+
 def _card(row) -> dict:
-    facts = json.loads(row["facts_json"])[-5:]
-    threads = json.loads(row["open_threads_json"])
+    person = _person(row)
+    facts = person["facts"][-5:]
+    threads = person["open_threads"]
     met = time.strftime("%b %d", time.localtime(row["first_met_ts"])) if row["first_met_ts"] else "?"
     brief = f"{row['display_name']} — met {met} ({row['first_met_event'] or 'unknown'})."
     if facts:
         brief += f" {facts[-1]['text']}"
     if threads:
         brief += f" Ask about: {threads[0]}."
-    return {"person_id": row["id"], "display_name": row["display_name"], "brief": brief,
-            "facts": facts, "open_threads": threads}
+    return {**person, "person_id": row["id"], "brief": brief, "facts": person["facts"], "open_threads": threads}
+
+@app.get("/people")
+def people():
+    rows = db().execute("SELECT * FROM person ORDER BY last_seen_ts DESC").fetchall()
+    return {"people": [_person(r) for r in rows]}
 
 @app.get("/recall")
 def recall(face_ref: str | None = None, name: str | None = None):

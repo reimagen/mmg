@@ -29,6 +29,16 @@ npm run dev                      # http://localhost:3000
 
 Requires **Node 22+**. Health check: `curl localhost:3000/api/health`
 
+## Local P0 boot
+
+```bash
+./scripts/p0-up.sh      # seed + uvicorn :7777 if not already serving
+./scripts/p0-check.sh   # /people + /recall; /api/health if :3000 is up
+cd web && npm run dev   # start Next yourself — p0-up never launches it
+```
+
+Browser mic is the P0 environment. See [`docs/SHIP.md`](./docs/SHIP.md).
+
 ## Lanes (do not collide)
 
 | Person | Owns | Contract |

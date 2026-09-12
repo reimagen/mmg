@@ -10,5 +10,5 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
-  return NextResponse.json(logInteraction(body));
+  return NextResponse.json(await logInteraction(body));
 }

@@ -4,7 +4,7 @@ import { getMode } from "@/lib/supervisor";
 
 export async function POST(request: Request) {
   const body = (await request.json()) as { face_ref?: string; name?: string };
-  const person = recall(body);
+  const person = await recall(body);
   if (!person) {
     return NextResponse.json({
       miss: true,
@@ -13,7 +13,7 @@ export async function POST(request: Request) {
   }
   return NextResponse.json({
     person,
-    brief: brief(person.id),
+    brief: await brief(person.id),
     mode: getMode(),
   });
 }

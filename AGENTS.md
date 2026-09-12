@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Hackathon repo: **MMG** — whisper card for the room you’re in.
+Hackathon repo: **MMG** — whisper card for the room you’re in. The live agent is **Mac**.
 Read this before editing. **4 hours left:** [`docs/SHIP.md`](./docs/SHIP.md)
 (critical path vs stretch). Longer briefs live in `docs/`.
 
@@ -12,6 +12,7 @@ Read this before editing. **4 hours left:** [`docs/SHIP.md`](./docs/SHIP.md)
 | `docs/PRD.md` | Product, lanes |
 | `docs/ARCHITECTURE.md` | Three loops, failure modes |
 | `docs/context_system_scope.md` | Memory contract (Jake) |
+| `docs/LIVE_LOOP.md` | Measured GPT Live client-delegation loop (LIVE-0002) |
 | `docs/HERMES.md` | Hermes slow plane (P1 — only if hall is already up) |
 | `docs/chief_of_staff_architecture.md` | Hall / Hermes contracts (reference, not the submission) |
 | `docs/JUDGING.md` | 2-minute run of show |

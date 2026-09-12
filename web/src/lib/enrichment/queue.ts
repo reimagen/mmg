@@ -83,9 +83,10 @@ async function run(job: EnrichmentJob) {
 
     job.status = "done";
     job.result = result;
-    const person = listPeople().find((p) => p.id === job.person_id);
+    const people = await listPeople();
+    const person = people.find((p) => p.id === job.person_id);
     if (person) {
-      upsertPerson({
+      await upsertPerson({
         id: person.id,
         display_name: person.display_name,
         facts: [

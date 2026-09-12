@@ -16,7 +16,7 @@ Second-pass recognition is **not** in this script.
 | A fact + a research line | `log_interaction` and Exa (or skip) show on card/ledger. |
 | No glasses | Do not stall. Input stays `browser`. |
 
-Script line: *“This is the copilot in the room. The panel is the room, not a backup app.”*
+Script line: *“This is Mac, in the room. The panel is the room, not a backup app.”*
 
 ## 2. Innovation & Theme Alignment
 

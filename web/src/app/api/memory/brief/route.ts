@@ -6,5 +6,5 @@ export async function POST(request: Request) {
   if (!person_id) {
     return NextResponse.json({ error: "person_id required" }, { status: 400 });
   }
-  return NextResponse.json({ brief: brief(person_id) });
+  return NextResponse.json({ brief: await brief(person_id) });
 }

@@ -4,7 +4,7 @@ import { brief, logInteraction, recall, upsertPerson } from "@/lib/memory";
 export async function runMemoryTool(name: string, args: Record<string, unknown>) {
   switch (name) {
     case "recall": {
-      const person = recall({
+      const person = await recall({
         face_ref: str(args.face_ref),
         name: str(args.name),
       });
@@ -33,7 +33,7 @@ export async function runMemoryTool(name: string, args: Record<string, unknown>)
         follow_ups: asStringArray(args.follow_ups),
       });
     case "brief":
-      return { brief: brief(String(args.person_id)) };
+      return { brief: await brief(String(args.person_id)) };
     default:
       return { error: `unknown tool ${name}` };
   }

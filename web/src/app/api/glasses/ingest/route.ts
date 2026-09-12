@@ -27,7 +27,7 @@ export async function POST(request: Request) {
 
   const intro = body.text.match(INTRO);
   if (intro?.[1]) {
-    const person = upsertPerson({
+    const person = await upsertPerson({
       display_name: intro[1],
       enrolled: false,
       facts: [
@@ -42,12 +42,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ enrolled: person, via: "spoken-name" });
   }
 
-  const person = recall({ face_ref: body.face_ref, name: guessName(body.text) });
+  const person = await recall({ face_ref: body.face_ref, name: guessName(body.text) });
   if (!person) {
     return NextResponse.json({ miss: true, text: body.text });
   }
 
-  logInteraction({
+  await logInteraction({
     person_id: person.id,
     transcript_ref: `glasses:${Date.now()}`,
     extracted_facts: [body.text.slice(0, 180)],
