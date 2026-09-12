@@ -12,6 +12,29 @@ const PORT = Number(process.env.PORT ?? 8790);
 const phones = new Set<Sock>();
 const uis = new Set<Sock>();
 let pcmBytes = 0;
+let micLevel = 0;
+let lastPcmAt = 0;
+
+/** RMS of a 16-bit mono PCM frame, 0..1: the "is the mic actually hearing anything" number. */
+const rms = (buf: Uint8Array | ArrayBuffer) => {
+  const view = buf instanceof ArrayBuffer ? new Int16Array(buf) : new Int16Array(buf.buffer, buf.byteOffset, buf.byteLength >> 1);
+  let sum = 0;
+  for (let i = 0; i < view.length; i++) sum += (view[i] / 32768) ** 2;
+  return view.length ? Math.sqrt(sum / view.length) : 0;
+};
+
+// The glasses' RTMP publish can stall with the phone none the wiser (no stream_status). The sidecar sees it as frame age;
+// nudge the phone to restart the camera, at most once per 20 s.
+const VISION_URL = process.env.VISION_URL ?? "http://127.0.0.1:8791";
+let lastNudge = 0;
+setInterval(async () => {
+  if (phones.size === 0 || Date.now() - lastNudge < 20_000) return;
+  const s = await fetch(`${VISION_URL}/status`, { signal: AbortSignal.timeout(1000) }).then((r) => r.json() as Promise<{ frame_age_s: number | null; source_ok: boolean }>).catch(() => undefined);
+  if (!s || s.frame_age_s === null || s.frame_age_s < 8) return;
+  lastNudge = Date.now();
+  event("STREAM", `no frames for ${s.frame_age_s}s -> asking phone to restart camera`);
+  broadcast(phones, JSON.stringify({ type: "camera_restart" }));
+}, 3000);
 
 const html = await Bun.file(new URL("./ui.html", import.meta.url)).text();
 
@@ -59,7 +82,7 @@ Bun.serve<{ role: Role }>({
       event("VOICE", `${wav.byteLength} bytes -> phone`);
       return Response.json({ ok: true, bytes: wav.byteLength }, { headers: cors });
     }
-    if (url.pathname === "/status") return Response.json({ phones: phones.size, uis: uis.size, pcmBytes }, { headers: cors });
+    if (url.pathname === "/status") return Response.json({ phones: phones.size, uis: uis.size, pcmBytes, micLevel: Number(micLevel.toFixed(3)), micAgeMs: lastPcmAt ? Date.now() - lastPcmAt : null }, { headers: cors });
     if (url.pathname === "/events") return Response.json(recent, { headers: cors });
     return new Response(html, { headers: { "content-type": "text/html" } });
   },
@@ -85,6 +108,8 @@ Bun.serve<{ role: Role }>({
         return;
       }
       pcmBytes += msg.byteLength;
+      micLevel = rms(msg);
+      lastPcmAt = Date.now();
       broadcast(uis, msg);
     },
   },

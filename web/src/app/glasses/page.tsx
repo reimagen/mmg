@@ -39,6 +39,7 @@ export default function Glasses() {
   const [relayStatus, setRelayStatus] = useState("relay idle");
   const [liveStatus, setLiveStatus] = useState("GPT Live idle");
   const [faces, setFaces] = useState<SeenFace[]>([]);
+  const [micLevel, setMicLevel] = useState(0);
   const [lines, setLines] = useState<Line[]>([]);
   const [expanded, setExpanded] = useState(false);
   const [voiceToGlasses, setVoiceToGlasses] = useState(false);
@@ -73,12 +74,14 @@ export default function Glasses() {
     let down = false;
     const poll = async () => {
       try {
-        const [h, p] = await Promise.all([
+        const [h, p, r] = await Promise.all([
           fetch("/api/health").then((r) => r.json() as Promise<{ health: LoopHealth }>),
           fetch("/api/memory/people").then((r) => r.json() as Promise<{ people: Person[] }>),
+          fetch(relayUrl.replace(/^ws/, "http").replace(/\/ui$/, "/status"), { signal: AbortSignal.timeout(800) }).then((r) => r.json() as Promise<{ micLevel: number }>).catch(() => undefined),
         ]);
         setHealth(h.health);
         setPeople([...p.people].sort((a, b) => Date.parse(b.last_seen) - Date.parse(a.last_seen)));
+        if (r) setMicLevel(r.micLevel);
         if (down) { down = false; sys("Memory API reachable again — recall is live."); }
       } catch {
         if (!down) { down = true; sys("Memory API unreachable — holding the last card, conversation continues."); }
@@ -139,7 +142,8 @@ export default function Glasses() {
   // Card from the last delegation wins; before that, the most recently seen person in memory.
   const shown = active ?? people[0] ?? null;
   const videoLabel = feedLive ? "STREAMING" : cameraStatus.startsWith("camera stalled") ? cameraStatus.replace("camera ", "").toUpperCase() : "NO FEED";
-  const Feed = ({ big }: { big?: boolean }) => (
+  // A plain function, not a component: a component defined inside render remounts every render and loses its scroll position.
+  const renderFeed = (big: boolean) => (
     <div ref={big ? bigFeed : feed} className={big ? s.overlayFeed : s.feed}>
       {lines.map((l, i) => (
         <div key={i} className={`${s.line} ${l.dir === "out" ? s.lineOut : l.dir === "sys" ? s.lineSys : ""}`}>
@@ -161,6 +165,7 @@ export default function Glasses() {
         <div className={s.stat}>RESEARCH <b>{health.enrichment.toUpperCase()}</b></div>
         <div className={s.stat}>POOL <b>{health.model_pool.toUpperCase()}</b></div>
         <div className={s.stat}>FACES <b>{faces.length}</b></div>
+        <div className={s.stat}>MIC <b style={{ color: mic.current?.stream && micLevel < 0.005 ? "var(--warn)" : undefined }}>{mic.current?.stream ? micLevel.toFixed(3) : "OFF"}</b></div>
         {health.realtime === "degraded" && <div className={s.badge}>DEGRADED</div>}
         <div className={s.spacer} />
         <div className={s.meter}>{[6, 10, 8, 13, 9, 11, 7].map((h, i) => <i key={i} className={i === 3 && liveOn ? "on" : ""} style={{ height: h }} />)}</div>
@@ -211,7 +216,7 @@ export default function Glasses() {
             <span>03 / LIVE TRANSCRIPT</span>
             <span style={{ display: "flex", gap: 10, alignItems: "center" }}><b>{lines.length}</b><button type="button" className={s.btn} onClick={() => setExpanded((x) => !x)}>EXPAND</button></span>
           </div>
-          <Feed />
+          {renderFeed(false)}
 
           <div className={`${s.label} ${s.section}`}><span>04 / MEMORY</span><b>{people.length}</b></div>
           <div className={s.people}>
@@ -245,7 +250,7 @@ export default function Glasses() {
             <span>LIVE TRANSCRIPT — FULL HISTORY</span>
             <span style={{ display: "flex", gap: 14, alignItems: "center" }}><b>{lines.length} LINES</b><button type="button" className={s.btn} onClick={() => setExpanded(false)}>CLOSE · T</button></span>
           </div>
-          <Feed big />
+          {renderFeed(true)}
         </div>
       )}
     </div>
