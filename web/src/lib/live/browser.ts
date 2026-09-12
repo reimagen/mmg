@@ -20,6 +20,12 @@ type LiveClientOptions = {
   onStatus: (text: string) => void;
   onCard: (result: DelegateResult) => void;
   onTranscript: (turn: TranscriptTurn) => void;
+  /** Client seam (client/*): audio input other than the browser mic, e.g. glasses over the relay. Default: getUserMedia. */
+  microphone?: MediaStream;
+  /** Client seam: receives Mac's voice track in addition to local playback, e.g. to forward to glasses. */
+  onOutputTrack?: (track: MediaStreamTrack) => void;
+  /** Client seam: latest frame of the client's live video source as a JPEG data URL; sent with every delegation. */
+  snapshot?: () => string | undefined;
 };
 
 /**
@@ -99,10 +105,11 @@ export class GptLiveClient {
       void this.audio.play().catch(() => {
         this.options.onStatus("Unmute / hit play to hear Mac.");
       });
+      this.options.onOutputTrack?.(event.track);
     });
 
     try {
-      this.microphone = await navigator.mediaDevices.getUserMedia({ audio: true });
+      this.microphone = this.options.microphone ?? (await navigator.mediaDevices.getUserMedia({ audio: true }));
       const mic = this.microphone.getAudioTracks()[0];
       if (!mic) throw new Error("Browser gave mic permission but no audio track");
       mic.enabled = true;
@@ -326,6 +333,7 @@ export class GptLiveClient {
           delegation_id: delegationId,
           transcripts: this.transcripts.slice(-12),
           last_person_id: this.lastPersonId,
+          frame: this.options.snapshot?.(),
         }),
       }).then((r) => r.json() as Promise<DelegateResult>);
 

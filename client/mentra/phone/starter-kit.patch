@@ -1,0 +1,72 @@
+diff --git a/examples/react-native/app.json b/examples/react-native/app.json
+index cca3faf..fa2ee0e 100644
+--- a/examples/react-native/app.json
++++ b/examples/react-native/app.json
+@@ -12,11 +12,7 @@
+     },
+     "ios": {
+       "supportsTablet": false,
+-      "bundleIdentifier": "com.mentra.bluetoothsdk.example.reactnative",
+-      "entitlements": {
+-        "com.apple.developer.networking.HotspotConfiguration": true,
+-        "com.apple.developer.networking.wifi-info": true
+-      },
++      "bundleIdentifier": "com.bootoshi.mentra.rn",
+       "infoPlist": {
+         "NSBluetoothAlwaysUsageDescription": "This example app uses Bluetooth to connect to smart glasses.",
+         "NSBluetoothPeripheralUsageDescription": "This example app uses Bluetooth to connect to smart glasses.",
+diff --git a/examples/react-native/src/screens/SystemScreen.tsx b/examples/react-native/src/screens/SystemScreen.tsx
+index 09b1ab1..8b6fb20 100644
+--- a/examples/react-native/src/screens/SystemScreen.tsx
++++ b/examples/react-native/src/screens/SystemScreen.tsx
+@@ -26,6 +26,7 @@ import {
+   wifiSubLabel,
+ } from '../sdkFormat';
+ import { RGB_LED_COLORS, durationText, type LedColor, type LedMode, type BluetoothSdkExampleModel, type SdkConsoleEvent } from '../useBluetoothSdkExample';
++import { useRelay } from '../relay';
+ 
+ const WIFI_COLLAPSED_NETWORK_LIMIT = 3;
+ 
+@@ -44,6 +45,8 @@ export function SystemScreen({ sdk }: { sdk: BluetoothSdkExampleModel }) {
+   const [showWifiPassword, setShowWifiPassword] = useState(false);
+   const [wifiExpanded, setWifiExpanded] = useState(false);
+   const didAutoScanWifi = useRef(false);
++  const relay = useRelay();
++  const [relayUrl, setRelayUrl] = useState('ws://192.168.217.184:8790/glasses');
+   const visibleNetworks = wifiExpanded ? networks : networks.slice(0, WIFI_COLLAPSED_NETWORK_LIMIT);
+   const hiddenNetworkCount = Math.max(0, networks.length - visibleNetworks.length);
+   const canToggleWifiList = networks.length > WIFI_COLLAPSED_NETWORK_LIMIT;
+@@ -279,6 +282,33 @@ export function SystemScreen({ sdk }: { sdk: BluetoothSdkExampleModel }) {
+         </Text>
+       </LinearGradient>
+ 
++      {/* Laptop relay */}
++      <LinearGradient colors={['rgba(255,255,255,0.7)', 'rgba(255,255,255,0.5)']} style={[styles.bigCard, !connected && styles.disabled]}>
++        <Text style={styles.tileTitle}>Laptop relay</Text>
++        <Text style={[styles.tileSub, { color: relay.status === 'on' ? colors.greenAccent : colors.muted }]}>
++          {relay.status === 'on' ? `streaming mic · ${relay.frames} frames` : relay.status === 'connecting' ? 'connecting…' : relay.status === 'error' ? relay.detail : 'send glasses mic to a laptop over wifi'}
++        </Text>
++        <View style={styles.modalInputRow}>
++          <TextInput
++            style={styles.modalInput}
++            value={relayUrl}
++            onChangeText={setRelayUrl}
++            autoCapitalize="none"
++            autoCorrect={false}
++            keyboardType="url"
++            placeholder="ws://192.168.1.10:8790/glasses"
++            placeholderTextColor={colors.mutedSoft}
++          />
++        </View>
++        <Pressable
++          style={styles.micSettingsButton}
++          disabled={!connected}
++          onPress={() => (relay.status === 'on' || relay.status === 'connecting' ? void relay.disconnect() : void relay.connect(relayUrl.trim()))}
++        >
++          <Text style={styles.micSettingsText}>{relay.status === 'on' || relay.status === 'connecting' ? 'Stop relay' : 'Start relay'}</Text>
++        </Pressable>
++      </LinearGradient>
++
+       {/* Microphone */}
+       <LinearGradient colors={['rgba(255,255,255,0.7)', 'rgba(255,255,255,0.5)']} style={[styles.micCard, !connected && styles.disabled]}>
+         <View style={styles.tileHead}>

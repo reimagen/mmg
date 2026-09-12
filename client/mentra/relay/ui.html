@@ -1,0 +1,78 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>mentra relay</title>
+<style>
+  body { font: 14px/1.4 ui-monospace, monospace; background: #111; color: #ddd; margin: 0; padding: 16px; }
+  #meter { height: 24px; background: #222; border-radius: 4px; overflow: hidden; margin: 8px 0; }
+  #bar { height: 100%; width: 0; background: #4caf50; transition: width 60ms; }
+  #log { height: 50vh; overflow: auto; background: #000; padding: 8px; border-radius: 4px; }
+  input { width: 60%; padding: 8px; font: inherit; background: #222; color: #ddd; border: 1px solid #444; }
+  button { padding: 8px 12px; font: inherit; }
+  .muted { color: #888; }
+</style>
+<h2>mentra relay</h2>
+<div id="status" class="muted">connecting…</div>
+<div id="meter"><div id="bar"></div></div>
+<div><button id="listen">Listen on this Mac</button> <span id="stats" class="muted"></span></div>
+<p>
+  <input id="say" placeholder="text to speak in the glasses">
+  <button id="send">Say</button>
+</p>
+<div id="log"></div>
+<script>
+  const log = document.getElementById("log");
+  const bar = document.getElementById("bar");
+  const stats = document.getElementById("stats");
+  const status = document.getElementById("status");
+  let frames = 0, bytes = 0;
+  let ctx = null, playhead = 0;
+
+  const line = (tag, message, at = Date.now()) => {
+    const d = document.createElement("div");
+    d.textContent = `${new Date(at).toLocaleTimeString()} [${tag}] ${message}`;
+    log.prepend(d);
+  };
+
+  document.getElementById("listen").onclick = () => {
+    ctx = new AudioContext({ sampleRate: 16000 });
+    playhead = ctx.currentTime;
+    line("UI", "listening: glasses mic plays through this Mac");
+  };
+
+  document.getElementById("send").onclick = async () => {
+    const text = document.getElementById("say").value;
+    const r = await fetch("/say", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text }) });
+    const j = await r.json();
+    if (!j.ok) line("ERR", j.error);
+  };
+
+  const ws = new WebSocket(`ws://${location.host}/ui`);
+  ws.binaryType = "arraybuffer";
+  ws.onopen = () => { status.textContent = "connected to relay"; };
+  ws.onclose = () => { status.textContent = "relay closed"; };
+  ws.onmessage = (e) => {
+    if (typeof e.data === "string") {
+      const j = JSON.parse(e.data);
+      line(j.tag, j.message, j.at);
+      return;
+    }
+    const pcm = new Int16Array(e.data);
+    frames++; bytes += e.data.byteLength;
+    let sum = 0;
+    for (let i = 0; i < pcm.length; i++) sum += pcm[i] * pcm[i];
+    const rms = Math.sqrt(sum / pcm.length) / 32768;
+    bar.style.width = `${Math.min(100, rms * 400)}%`;
+    stats.textContent = `${frames} frames, ${(bytes / 1024).toFixed(0)} KB`;
+    if (!ctx) return;
+    const buf = ctx.createBuffer(1, pcm.length, 16000);
+    const ch = buf.getChannelData(0);
+    for (let i = 0; i < pcm.length; i++) ch[i] = pcm[i] / 32768;
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.connect(ctx.destination);
+    const now = ctx.currentTime;
+    if (playhead < now + 0.05 || playhead > now + 0.3) playhead = now + 0.05;
+    src.start(playhead);
+    playhead += buf.duration;
+  };
+</script>

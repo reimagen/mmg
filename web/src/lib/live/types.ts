@@ -10,6 +10,8 @@ export type DelegateRequest = {
   transcripts: TranscriptTurn[];
   last_person_id?: string;
   face_ref?: string;
+  /** Client seam: JPEG data URL from the client's live video source at delegation time. */
+  frame?: string;
 };
 
 export type DelegateResult = {
@@ -19,4 +21,6 @@ export type DelegateResult = {
   card: string;
   person: Person | null;
   miss: boolean;
+  /** Where the delegation frame was saved (web/data/frames/<delegation_id>.jpg), when one was sent. */
+  frame_ref?: string;
 };

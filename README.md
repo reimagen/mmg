@@ -47,7 +47,7 @@ Browser mic is the P0 environment. See [`docs/SHIP.md`](./docs/SHIP.md).
 |---|---|---|
 | **Jake** | `web/src/lib/memory/**`, `memory/` | SQLite in-process (`node:sqlite`) behind `@/lib/memory`: `upsert_person` / `log_interaction` / `brief` / `recall` by name. HTTP: `/api/memory/*`. Reads &lt; 150ms. |
 | **Lisa** | `web/src/lib/live/**`, `enrichment/**`, `hall/**`, `/api/session`, `/api/delegate` | GPT Live + **client delegation**, Exa queue. Hermes only if hall is already up. |
-| **Saint** | `glasses/**` | **P2.** MentraOS. Camera ≠ Live video. Do not block P0. |
+| **Saint** | `client/mentra/**` | Mentra Live over the Bluetooth SDK, live on hardware. `client/browser` is the fallback. See `client/mentra/README.md`. |
 | **Luis** | `web/src/app/**` | Whisper-card + ledger, demo script, submission. |
 
 Shared types: `web/src/lib/types.ts`. Change those together.
@@ -74,7 +74,7 @@ Exa MCP (for the coding agent, not the live loop): `https://mcp.exa.ai/mcp` with
 
 ## Glasses
 
-See [`glasses/README.md`](./glasses/README.md). MentraOS miniapp is on-device (`bunx create-mentra-miniapp`). If streaming is flaky in hour 2, freeze the browser-mic path and keep going.
+See [`client/mentra/README.md`](./client/mentra/README.md). Page: `/glasses`. If it flakes on stage, use `/` (browser mic).
 
 ## Demo script (2 min)
 
