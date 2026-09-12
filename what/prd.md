@@ -62,7 +62,7 @@ vector store never (for a demo)`.
   misses → name-spoken fallback ("nice to meet you, NAME" triggers enrollment); GPT Live
   quota → OpenRouter text loop with TTS.
 - Token pools: OpenAI primary; **OpenRouter fallback; Oxen.ai as third pool** (OpenAI-
-  compatible: base_url `https://hub.oxen.ai/api`, `Bearer $OXEN_API_KEY`).
+  compatible: base_url `https://hub.oxen.ai/api/ai`, `Bearer $OXEN_API_KEY`).
 
 ## Privacy guardrail (one line, saves the demo)
 Face recognition on **enrolled, consenting demo participants only** (pre-enroll 3–5 people);

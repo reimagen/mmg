@@ -9,11 +9,21 @@ tags: [mission, hackathon, build, demo]
 
 # Mission — the 6-hour build (KINN, 2026-09-12)
 
-**Objective:** a working 2-minute demo of the wearable social copilot — recognize an
-enrolled person, whisper a context card, capture a new fact, recall on re-encounter,
-one roast-mode beat.
+**Objective (re-ranked 12:12, `docs/SHIP.md`):** a 2-minute video, browser mic, live
+conversation — hear a name → bank the person + facts on the ledger → research them in the
+background → whisper card shows the record; one rehearsed failure beat. Re-encounter and
+roast are stretch (D13).
 
-## Lanes (from PRD v2)
+## Lanes — remaining ~4 h (SHIP.md; supersedes the PRD v2 table below)
+
+| Who | P0 only | Stop doing |
+|---|---|---|
+| **Jake** | `upsert`/`log`/`brief` real on spoken name; seed one demo person; `:7777` answers | face embeddings, sighting pipeline |
+| **Lisa** | Live E2E, delegate → bank, client → `:7777` via `MEMORY_API_URL`, Exa fact on card | hall extraction, second-pass prompts, Auth0 |
+| **Luis** | card + ledger for *this* conversation; script + submit | second-guest UI, chatbox, polish |
+| **Saint** | stay out of P0; glasses only if already working | face lock as a demo beat |
+
+## Lanes (from PRD v2 — historical)
 
 | Hour | Jake (memory) | Luis (agent loop) | Saint (device) | Lisa (product/demo) |
 |---|---|---|---|---|
@@ -26,9 +36,10 @@ one roast-mode beat.
 
 ## Gates
 
-- **Hour 2:** glasses→GPT Live flaky → fall back to phone mic + audio-only capture (PRD
-  failure modes). Decide early, not at hour 5.
-- **Hour 3:** verify which append path speaks a hall packet reliably.
+- ~~Hour 2: glasses→GPT Live latency~~ — resolved by D12: browser mic is the environment.
+- ~~Hour 3: hall packet append path~~ — deferred with D14 (Hermes P1, off by default).
+- **Now:** web client hits `:7777` (not the JSON stub) — SCORING C3 level 3.
+- **Freeze:** after rehearsal take 2 if both takes ≥4 on every criterion.
 
 ## Success
 

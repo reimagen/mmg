@@ -40,6 +40,10 @@ interaction(id, ts, person_id, transcript_ref, extracted_facts_json, follow_ups_
 
 ## API (the agent's tools — FastAPI, four routes)
 
+> **12:12 re-rank (D13):** P0 is the **spoken-name path** — `upsert_person` (face_ref null)
+> → `log_interaction` → `brief`. `recall(face_ref)` and re-encounter are P2. The web client
+> must call these over HTTP (`MEMORY_API_URL`); the in-process JSON stub is not banking.
+
 | Tool | Contract | Budget |
 |---|---|---|
 | `recall(face_ref \| name)` | → card `{person_id, display_name, brief, facts[], open_threads[]}` or `{unknown:true}` | **<150 ms**, local only |
@@ -65,6 +69,9 @@ Rule: **the realtime loop never awaits the network.** LLM/Exa enrichment writes 
 - Demo reset: `seed.py` reloads the enrolled cast + canned facts in <10 s.
 
 ## Hall integration (adopted from Bootoshi's chief-of-staff architecture, 09-12 11:31)
+
+> **12:12 (D14):** P1. `HERMES_ENABLED=0` ships; local Exa queue is the same slow plane
+> with the hall unplugged. Seam exists: `web/src/lib/hall/client.ts`, `POST /api/hall`.
 
 Bootoshi's **hall** (`what/reference/chief_of_staff_architecture_bootoshi.md` — ~470 lines
 Bun/TS + SQLite, extractable) is the bridge between the voice agent and controlling agents.
