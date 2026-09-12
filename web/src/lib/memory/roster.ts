@@ -1,4 +1,6 @@
 import { DatabaseSync } from "node:sqlite";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { nameKey, rosterDb } from "./sqlite.ts";
 
 /**
@@ -46,8 +48,29 @@ export function saveRoster(entries: RosterEntry[]) {
   }
 }
 
+/**
+ * A fresh clone has no DB, so the roster ships as a committed file and loads itself on first read.
+ * Re-run `npm run roster:export` after an import to refresh it.
+ */
+function hydrate() {
+  const g = globalThis as { __mmgRosterHydrated?: boolean };
+  if (g.__mmgRosterHydrated) return;
+  g.__mmgRosterHydrated = true;
+  try {
+    const row = db().prepare("SELECT COUNT(*) AS n FROM roster").get() as { n: number };
+    if (row.n > 0) return;
+    const file = process.env.MEMORY_ROSTER_FILE ?? join(process.cwd(), "roster.json");
+    const entries = JSON.parse(readFileSync(file, "utf8")) as RosterEntry[];
+    saveRoster(entries);
+    console.log(`[roster] loaded ${entries.length} from ${file}`);
+  } catch {
+    // No file, no roster — the demo still works, it just has no homework.
+  }
+}
+
 export function listRoster(): RosterEntry[] {
   try {
+    hydrate();
     return db()
       .prepare("SELECT json FROM roster")
       .all()

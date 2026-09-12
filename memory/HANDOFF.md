@@ -352,3 +352,18 @@ Seth's real surname (Seth Tamrowski, Oxen AI — GTM), which the earlier guess h
 table for humans, JSON for anything else. It is deliberately **not** left only inside `MMG.aDNA`,
 because the people outlast the build; this is a contact graph, not build state. Re-run it after any
 roster import and the export refreshes.
+
+---
+
+## 15:35 addendum — the roster ships with the repo
+
+`web/roster.json` is **committed** (83 people, 79 with context). The SQLite DB is gitignored, so
+without this a fresh clone had no homework and every card came up cold.
+
+It loads itself. The first read of an empty roster table hydrates from `web/roster.json`, so
+`git pull && npm run dev` is all anyone needs — no scraping, no pre-flight, no key. Verified by
+clearing the table and restarting: 83 back.
+
+After any new import (`POST /api/roster/import`), run **`npm run roster:export`** to refresh both
+the committed copy and the lattice copy, then commit. Names, orgs and one-line descriptions only —
+no emails or contact details were collected.

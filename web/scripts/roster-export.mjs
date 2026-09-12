@@ -40,4 +40,6 @@ Machine-readable: \`${slug}.json\`. Regenerate with \`npm run roster:export\` in
 ${rows.join("\n")}
 `,
 );
-console.log(`${roster.length} people → ${join(out, slug)}.{md,json}`);
+// The repo copy: committed, so a fresh clone has the room without re-scraping anything.
+writeFileSync(join(process.cwd(), "roster.json"), JSON.stringify(roster, null, 1));
+console.log(`${roster.length} people → ${join(out, slug)}.{md,json} + web/roster.json`);
