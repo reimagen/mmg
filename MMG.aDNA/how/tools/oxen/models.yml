@@ -1,0 +1,165 @@
+# Oxen.ai provider block for oh-my-pi (omp).
+# Merge into ~/.omp/agent/models.yml under a top-level `providers:` key.
+# Generated from https://hub.oxen.ai/api/ai/models -- costs are USD per 1M tokens.
+# NOTE: omp's documented schema (README) only shows id/name/contextWindow/
+# maxTokens. `reasoning`, `input` and `cost` follow Greg's post; if omp
+# rejects them, delete those three lines per model and it still works.
+providers:
+  oxenai:
+    baseUrl: https://hub.oxen.ai/api/ai
+    api: openai-completions
+    apiKey: PASTE_OXEN_KEY_HERE  # omp does NOT document ${ENV} interpolation
+    models:
+      - id: deepseek-v4-flash
+        name: DeepSeek V4 Flash
+        reasoning: false
+        input: [text]
+        contextWindow: 1048576
+        maxTokens: 384000
+        cost:
+          input: 0.09
+          output: 0.18
+      - id: deepseek-v4-1-flash
+        name: DeepSeek V4.1 Flash
+        reasoning: false
+        input: [image, text]
+        contextWindow: 1048576
+        maxTokens: 384000
+        cost:
+          input: 0.39
+          output: 1.56
+      - id: deepseek-v4-pro
+        name: DeepSeek V4 Pro
+        reasoning: true
+        input: [text]
+        contextWindow: 1048576
+        maxTokens: 384000
+        cost:
+          input: 1.15
+          output: 2.25
+      - id: glm-5-3-flash
+        name: GLM 5.3 Flash
+        reasoning: false
+        input: [image, text, video]
+        contextWindow: 1048576
+        maxTokens: 131072
+        cost:
+          input: 0.195
+          output: 0.65
+      - id: zai-org-glm-5-3
+        name: GLM 5.3
+        reasoning: true
+        input: [text]
+        contextWindow: 1048576
+        maxTokens: 131072
+        cost:
+          input: 1.82
+          output: 5.72
+      - id: kimi-k3
+        name: Kimi K3
+        reasoning: true
+        input: [image, text, video]
+        contextWindow: 1048576
+        maxTokens: 1048576
+        cost:
+          input: 3.0
+          output: 15.0
+      - id: qwen3-8-max
+        name: Qwen3.8 Max
+        reasoning: true
+        input: [text]
+        contextWindow: 1000000
+        maxTokens: 32000
+        cost:
+          input: 2.6
+          output: 7.8
+      - id: gpt-oss-120b
+        name: OpenAI/GPT-OSS-120B
+        reasoning: false
+        input: [text]
+        contextWindow: 131072
+        maxTokens: 32000
+        cost:
+          input: 0.15
+          output: 0.6
+      - id: gpt-5-nano
+        name: GPT 5 Nano
+        reasoning: true
+        input: [image, text]
+        contextWindow: 400000
+        maxTokens: 128000
+        cost:
+          input: 0.05
+          output: 0.4
+      - id: gpt-5-mini
+        name: GPT 5 Mini
+        reasoning: true
+        input: [image, text]
+        contextWindow: 400000
+        maxTokens: 128000
+        cost:
+          input: 0.25
+          output: 2.0
+      - id: gpt-5-6-luna
+        name: GPT 5.6 Luna
+        reasoning: true
+        input: [image, text]
+        contextWindow: 1050000
+        maxTokens: 128000
+        cost:
+          input: 1.0
+          output: 6.0
+      - id: gpt-5-6-sol
+        name: GPT 5.6 Sol
+        reasoning: true
+        input: [image, text]
+        contextWindow: 1050000
+        maxTokens: 128000
+        cost:
+          input: 5.0
+          output: 30.0
+      - id: gpt-6-astra
+        name: GPT 6 Astra
+        reasoning: true
+        input: [image, text]
+        contextWindow: 1050000
+        maxTokens: 128000
+        cost:
+          input: 13.0
+          output: 65.0
+      - id: claude-sonnet-5
+        name: Claude Sonnet 5
+        reasoning: true
+        input: [image, text]
+        contextWindow: 1000000
+        maxTokens: 128000
+        cost:
+          input: 3.5
+          output: 18.0
+      - id: claude-opus-4-8
+        name: Claude Opus 4.8
+        reasoning: true
+        input: [image, text]
+        contextWindow: 1000000
+        maxTokens: 128000
+        cost:
+          input: 5.0
+          output: 25.0
+      - id: gemini-3-8-flash
+        name: Gemini 3.8 Flash
+        reasoning: false
+        input: [audio, image, text, video]
+        contextWindow: 1048576
+        maxTokens: 65536
+        cost:
+          input: 0.75
+          output: 3.75
+      - id: gemini-3-1-pro-preview
+        name: Gemini 3.1 Pro Preview
+        reasoning: true
+        input: [audio, image, text, video]
+        contextWindow: 1048576
+        maxTokens: 65536
+        cost:
+          input: 2.0
+          output: 12.0
