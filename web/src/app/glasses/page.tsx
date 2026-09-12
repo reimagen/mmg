@@ -3,21 +3,21 @@
 import { useEffect, useRef, useState } from "react";
 import { GptLiveClient } from "@/lib/live/browser";
 import type { DelegateResult, TranscriptTurn } from "@/lib/live/types";
-import { snapshotVideo } from "@/lib/live/frame";
 import { forwardVoiceToGlasses, openGlassesMic, type GlassesMic } from "@client/mentra/web/glassesAudio";
-import { openGlassesCamera } from "@client/mentra/web/glassesCamera";
+import { openGlassesCamera, type GlassesCamera, type SeenFace } from "@client/mentra/web/glassesCamera";
 
 /** Mentra Live client. Same GptLiveClient as the browser-mic page; only the audio device differs. See client/mentra/README.md. */
 
 const DEFAULT_RELAY = typeof window === "undefined" ? "" : `ws://${window.location.hostname}:8790/ui`;
-const DEFAULT_WHEP = typeof window === "undefined" ? "" : `http://${window.location.hostname}:8889/live/mentra-live/whep`;
+const DEFAULT_VISION = typeof window === "undefined" ? "" : `ws://${window.location.hostname}:8791/ws`;
 
 export default function Glasses() {
   const [relayUrl, setRelayUrl] = useState(DEFAULT_RELAY);
-  const [whepUrl, setWhepUrl] = useState(DEFAULT_WHEP);
+  const [visionUrl, setVisionUrl] = useState(DEFAULT_VISION);
   const [cameraStatus, setCameraStatus] = useState("camera idle");
-  const video = useRef<HTMLVideoElement | null>(null);
-  const closeCamera = useRef<(() => void) | null>(null);
+  const [faces, setFaces] = useState<SeenFace[]>([]);
+  const img = useRef<HTMLImageElement | null>(null);
+  const camera = useRef<GlassesCamera | null>(null);
   const [relayStatus, setRelayStatus] = useState("relay idle");
   const [liveStatus, setLiveStatus] = useState("GPT Live idle");
   const [frames, setFrames] = useState(0);
@@ -29,18 +29,13 @@ export default function Glasses() {
   const turnsRef = useRef<TranscriptTurn[]>([]);
   const renderTimer = useRef<number | null>(null);
 
-  useEffect(() => () => { mic.current?.close(); live.current?.stop(); closeCamera.current?.(); }, []);
+  useEffect(() => () => { mic.current?.close(); live.current?.stop(); camera.current?.close(); }, []);
 
-  async function connectCamera() {
-    closeCamera.current?.();
-    if (!video.current) return;
+  function connectCamera() {
+    camera.current?.close();
+    if (!img.current) return;
     setCameraStatus("camera connecting…");
-    try {
-      closeCamera.current = await openGlassesCamera(whepUrl, video.current);
-      setCameraStatus("camera live");
-    } catch (e) {
-      setCameraStatus(e instanceof Error ? e.message : "camera failed");
-    }
+    camera.current = openGlassesCamera(visionUrl, img.current, { status: setCameraStatus, faces: setFaces });
   }
 
   function connectRelay() {
@@ -55,7 +50,7 @@ export default function Glasses() {
       microphone: stream,
       // Demo: GPT Live's voice plays on the laptop. The glasses path is utterance-chunked WAV (0.5-1 s late); real-time needs react-native-webrtc on the phone.
       onOutputTrack: voiceToGlasses ? (track) => forwardVoiceToGlasses(track, relayUrl) : undefined,
-      snapshot: () => (video.current ? snapshotVideo(video.current) : undefined),
+      snapshot: () => camera.current?.snapshot(),
       onStatus: setLiveStatus,
       onCard: (r: DelegateResult) => setCard(r.card),
       onTranscript: (turn) => {
@@ -85,10 +80,15 @@ export default function Glasses() {
         <p className="mt-4 text-lg leading-relaxed">{card}</p>
       </section>
 
-      <video ref={video} muted playsInline className="mx-auto w-full max-w-xl rounded-sm bg-black" />
+      <img ref={img} alt="glasses camera, annotated" className="mx-auto w-full max-w-xl rounded-sm bg-black" />
+      {faces.length > 0 && (
+        <p className="mx-auto text-sm text-[var(--hush)]">
+          {faces.map((f, i) => <span key={i} className="mr-3">{f.name ?? "unknown"}{f.name ? ` ${f.score.toFixed(2)}` : ""}</span>)}
+        </p>
+      )}
 
       <div className="flex flex-wrap items-center gap-3">
-        <input value={whepUrl} onChange={(e) => setWhepUrl(e.target.value)} className="min-w-80 rounded-sm bg-[var(--paper)] px-3 py-2 text-[var(--ink)]" />
+        <input value={visionUrl} onChange={(e) => setVisionUrl(e.target.value)} className="min-w-80 rounded-sm bg-[var(--paper)] px-3 py-2 text-[var(--ink)]" />
         <button type="button" onClick={connectCamera} className="rounded-sm bg-[var(--paper)] px-4 py-2 text-[var(--ink)]">Connect glasses camera</button>
       </div>
 

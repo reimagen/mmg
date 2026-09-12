@@ -6,6 +6,8 @@ import { runBackend } from "@/lib/context/backend";
 import type { DelegateRequest } from "@/lib/live/types";
 import { detect } from "@/lib/memory/detect";
 import { recordTrace, traceOf } from "@/lib/context/runtime";
+import { describeFrame } from "@/lib/live/vision";
+import { enrollFace, faceRef, seenFaces } from "@/lib/live/faces";
 
 const FRAMES_DIR = join(process.cwd(), "data", "frames");
 
@@ -36,7 +38,23 @@ export async function POST(request: Request) {
     const heard = userText(body);
     const signals = detect(heard);
     const started = Date.now();
-    const result = { signals, ...(await handle(body)), frame_ref };
+    // A recognized face in view resolves the person even when no name is spoken.
+    if (!body.face_ref) {
+      const known = (await seenFaces())?.find((f) => f.person_id);
+      if (known?.person_id) body.face_ref = faceRef(known.person_id);
+    }
+    const [handled, sight] = await Promise.all([
+      handle(body),
+      body.frame ? describeFrame(body.frame, heard).catch((e: unknown) => { console.error("[vision]", e); return undefined; }) : undefined,
+    ]);
+    // Meet workflow: any introduction that produced a person links the largest face in view to them.
+    if (handled.person && !handled.person.enrolled) void enrollFace(handled.person.id, handled.person.display_name);
+    const result = {
+      signals,
+      ...handled,
+      thinking: sight ? `${handled.thinking}\nSeen: ${sight}` : handled.thinking,
+      frame_ref,
+    };
     recordTrace(traceOf({ delegation_id: body.delegation_id, heard }, result, signals, Date.now() - started));
     return NextResponse.json(result);
   } catch (error) {
