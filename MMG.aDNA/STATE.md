@@ -66,6 +66,7 @@ tags: [state, mmg, hackathon]
 
 - 13:15 closed: [[how/sessions/session_2026-09-12_1300_scope_memory_campaign]] — campaign + architecture scoped, D17–D21 proposed.
 - 12:55 closed: [[how/sessions/session_2026-09-12_1245_memory_p0_build]] — M1–M4 built, gate passed, docs branch pushed.
+- 15:07 closed: [[how/sessions/session_2026-09-12_1330_detection_research_roster]] — detection, real Exa research, the 83-person event roster, `/api/runtime`, `docs/BACKEND.md`; D25–D37.
 - 13:20 closed: [[how/sessions/session_2026-09-12_1310_context_system]] — Lisa's push ingested; LLM backend + LLM-Wiki shipped (D22–D24).
 
 ## NEXT (Jake) — campaign `how/campaigns/campaign_memory_p0.md` Phase 2
