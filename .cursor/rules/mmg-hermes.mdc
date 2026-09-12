@@ -1,0 +1,18 @@
+---
+description: Hall / Hermes slow plane — fire-and-forget, never on Live path
+globs: web/src/lib/hall/**,web/src/lib/enrichment/**,web/src/app/api/hall/**
+alwaysApply: false
+---
+
+# Hermes + hall
+
+Slow plane only. **P1** — local Exa is the P0 research path (`docs/SHIP.md`).
+Do not stand up hall from scratch in the remaining hours.
+
+- `HERMES_ENABLED=0` (default): local Exa/treg queue.
+- `1` + `HALL_WS_URL`: `send("research", text)` fire-and-forget. Ack = row stored, not "research done."
+- Hall down → same local queue. Conversation continues.
+- Inbound packets: 5 fields `state·say·did·need·next`. UI card = verbatim `say`. Voice may paraphrase. `consumed` only after the card is on screen.
+- Room titles must be `room:<name>` on the Hermes side (`room:research` = Exa).
+- Do not fetch `/hall/briefing` inside a Live turn (~18 s).
+- Building block, not the submission. Plan: `docs/HERMES.md`.

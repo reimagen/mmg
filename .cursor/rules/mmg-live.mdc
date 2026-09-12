@@ -1,0 +1,25 @@
+---
+description: Lisa GPT Live — client delegation, no video, browser mic
+globs: web/src/lib/live/**,web/src/app/api/session/**,web/src/app/api/delegate/**,web/src/lib/enrichment/**
+alwaysApply: false
+---
+
+# GPT Live (client delegation)
+
+Session: `model: gpt-live-1`, `delegation: { type: "client" }`.
+Cannot switch to Responses mid-session.
+
+```ts
+// On data channel:
+// session.input_transcript.delta  → keep in the app
+// session.delegation.created      → POST /api/delegate { delegation_id, transcripts }
+// then session.thinking.append / session.commentary.append (≤500 tokens)
+```
+
+Camera never reaches Live. Browser `getUserMedia({ audio: true })` is the default path.
+Glasses ingest is additive (`noteGlassesSeen`); if silent, `health.input === "browser"`.
+
+Exa: `timeout` + skip. Do not `await` enrichment before appending to Live.
+P0 is **bank + research**, not face recall. Delegate on spoken name and new facts.
+Hermes `send` only if `HERMES_ENABLED=1` *and* hall is already up; else local Exa.
+Quota fail: OpenRouter then Oxen (`https://hub.oxen.ai/api/ai`).

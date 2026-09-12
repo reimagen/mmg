@@ -1,0 +1,17 @@
+---
+description: Luis whisper-card operator UI
+globs: web/src/app/**/*.tsx,web/src/app/**/*.css
+alwaysApply: false
+---
+
+# Operator UI
+
+The panel is the judge-facing HUD and the no-glasses environment.
+
+- Hero is the whisper card (name, banked facts, one research line).
+- Header shows `glasses` vs `browser`. Start button: `Start GPT Live · browser mic`.
+- Memory ledger: people, facts, timestamps, source. No bystander transcripts.
+- Do not add a typed chat composer — that scores us as a wrapper (criterion 2).
+- Second-pass / “ask about X on re-encounter” is P2. Coach/roast is P1.
+
+Keep copy short. The card is verbatim ground truth; audio may paraphrase.

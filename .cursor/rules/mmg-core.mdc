@@ -1,0 +1,26 @@
+---
+description: MMG hackathon core — 4-hour ship, lanes, Live rules
+alwaysApply: true
+---
+
+# MMG
+
+Social copilot for a live conversation. Not a chatbox.
+
+Read `docs/SHIP.md` then `AGENTS.md` before nontrivial edits.
+
+P0 (remaining ~4 hours): bank the record + contact research on browser mic.
+P2: second-pass recognition, face-rec, glasses HUD, Auth0.
+
+- **Lisa** owns GPT Live (`web/src/lib/live/**`, `/api/session`, `/api/delegate`) + Exa.
+- **Luis** owns the whisper-card UI (`web/src/app/page.tsx`).
+- **Jake** owns `memory/**` (FastAPI :7777).
+- **Saint** owns `glasses/**` (P2 — do not block P0).
+
+Do not mix lanes. Shared types only in `web/src/lib/types.ts`.
+
+Never: send glasses video to GPT Live; block Live on Exa/treg/Hermes; face-match strangers; invent people; commit `.env`; add Auth0.
+
+Always: client delegation; browser mic works without glasses; `brief` <150 ms local; UI card is ground truth if voice paraphrases.
+
+Hermes is P1 behind the hall (`docs/HERMES.md`). Default `HERMES_ENABLED=0`.

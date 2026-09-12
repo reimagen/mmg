@@ -1,3 +1,4 @@
+import { hermesEnabled } from "./hall/client";
 import type { CoachMode, LoopHealth } from "../types";
 
 /**
@@ -20,6 +21,7 @@ let health: LoopHealth = {
   input: "browser",
   glasses: false,
   model_pool: "openai",
+  hermes: "off",
 };
 
 export function getMode() {
@@ -45,6 +47,11 @@ export function getHealth(): LoopHealth {
     ...health,
     glasses,
     input: glasses ? "glasses" : "browser",
+    hermes: hermesEnabled()
+      ? health.hermes === "off"
+        ? "down"
+        : health.hermes
+      : "off",
   };
 }
 
@@ -55,19 +62,19 @@ export function patchHealth(patch: Partial<LoopHealth>) {
 
 /** Short live-model prompt: when to ask the backend, not how to run tools. */
 export const LIVE_INSTRUCTIONS = {
-  coach: `You are MMG, a wearable social copilot at a networking event.
+  coach: `You are MMG, a social copilot in a live networking conversation.
 Whisper short context. Never lecture.
 
 Delegation policy:
 Backend tools:
-- Memory: recall who someone is, enroll a consenting name, log a new fact, write a 2-sentence whisper card.
+- Memory: enroll a spoken name, log a new fact, write a 2-sentence whisper card.
 Delegate to the backend when:
-- you hear a name, an introduction, or an enrolled-face hint
-- a new fact or open thread appears
+- you hear a name or an introduction (“nice to meet you, NAME”)
+- a new fact about that person appears
 Do not delegate for small talk that does not identify anyone.
 Do not invent people or facts. Wait for the backend result before claiming memory.
-Privacy: only enrolled, consenting demo participants may be face-matched.
-Strangers: capture the spoken name. No camera lookup.`,
+Do not wait for a second encounter or a face match.
+Privacy: capture the spoken name. No camera lookup of strangers.`,
 
   roast: `Same copilot, roast-me mode. After the backend returns a card, one dry
 specific jab per turn using remembered facts. Never punch down. Still delegate
@@ -81,11 +88,12 @@ Use the latest context and verified memory records. If a needed detail is
 still unclear, ask for that detail instead of guessing.
 
 ## Task instructions
-- recall(face_ref | name) — enrolled faces only; strangers are name-capture
-- upsert_person — enroll only with consent / spoken introduction
+- upsert_person — enroll with consent / spoken introduction (face_ref may be null)
 - log_interaction — extract facts and follow-ups from this turn
 - brief — 2-sentence whisper card for the HUD
-Never call Exa or treg from this path; enrichment is a separate killable queue.
+- recall(name) — optional lookup by spoken name; do not require a face_ref
+Never call Exa or treg from this path; enrichment is a separate killable queue
+(Hermes `room:research` when HERMES_ENABLED=1, else the local Exa queue).
 Never invent a person.
 
 ## Return the result

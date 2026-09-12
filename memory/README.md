@@ -10,5 +10,5 @@ uvicorn memory.api:app --port 7777
 ```
 
 Tools: `GET /recall?face_ref=|name=` · `POST /upsert_person` · `POST /log_interaction` ·
-`GET /brief/{person_id}`. Rules: recall/brief are local-only (<150 ms, no LLM); the realtime
-loop never awaits the network — enrichment writes back async and upgrades the *next* recall.
+`GET /brief/{person_id}`. P0: upsert/log/brief on spoken name. Face-ref recall is P2.
+recall/brief are local-only (<150 ms, no LLM); the realtime loop never awaits research.

@@ -1,5 +1,8 @@
 # The Chief of Staff voice architecture
 
+**MMG note:** this is a *reference* contract, not the 4-hour ship path.
+Ship rank: [`SHIP.md`](./SHIP.md). Hermes connect: [`HERMES.md`](./HERMES.md) (P1).
+
 Date: 2026-09-01. Grounded in code at these commits: `dgx-voice` `feat/hall-loop` @ `c4d0148`, `hermes-voice` @ `62f91e7`, `hermes-agent` branch `feat/hall-handoff-enforcement` @ `b23f39a`.
 
 This document has one job: show the seams so that the voice half can be swapped for **any voice agent that can call functions**, and the Hermes half (the hall plus its enforcement) can be lifted out as its own module.

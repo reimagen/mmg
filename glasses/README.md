@@ -1,6 +1,9 @@
 # glasses — MentraOS miniapp (Saint)
 
-Wearable path: MentraOS session → transcript/HUD → `POST /api/glasses/ingest`.
+**P2.** Browser mic is the 4-hour environment (`docs/SHIP.md`). Do not block
+Lisa/Jake/Luis on face lock or HUD.
+
+Wearable path if already working: MentraOS session → transcript/HUD → `POST /api/glasses/ingest`.
 
 MentraOS 3.0 miniapps run **on-device** (`@mentra/miniapp`), not as a cloud TPA.
 Docs: https://docs.mentraglass.com/app-devs/getting-started/quickstart.md
@@ -27,7 +30,6 @@ bun dev -- --port 3001
 
 Phone: Mentra App → Settings → Miniapp Developer Settings → Scan QR.
 
-## If glasses flake (hour 2)
+## If glasses flake
 
-Fall back immediately. The browser panel + laptop mic is the demo critical path.
-See degraded modes in `docs/ARCHITECTURE.md`.
+Do not debug on the remaining clock. Browser panel + laptop mic is P0.

@@ -19,9 +19,12 @@ web/data/*.json
 *.pem
 *.tsbuildinfo
 npm-debug.log*
-.cursor
-.merge-overlay/
 .overlay-stash/
+.merge-overlay/
+# Keep committed Cursor rules; ignore local Cursor junk only
+.cursor/**
+!.cursor/rules/
+!.cursor/rules/**
 web/AGENTS.md
 web/CLAUDE.md
 web/next-env.d.ts

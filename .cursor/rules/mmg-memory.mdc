@@ -1,0 +1,24 @@
+---
+description: Jake memory sidecar — FastAPI contract and latency budget
+globs: memory/**
+alwaysApply: false
+---
+
+# Memory sidecar
+
+Contract: `docs/context_system_scope.md`.
+
+Four tools only: `recall` · `upsert_person` · `log_interaction` · `brief`.
+SQLite + JSON columns. No vector store for the demo.
+
+```python
+# recall / brief: local, <150ms, no LLM, no Exa
+# unknown face → {"unknown": True}  (never camera-lookup a stranger)
+# heard-name enroll: face_ref=None
+```
+
+Run: `uvicorn memory.api:app --port 7777`. Self-check: `python memory/api.py`.
+Seed: `python -m memory.seed`. DB file `memory/mmg.db` is gitignored.
+
+Do not put this API behind the hall. P0 writes are `upsert` + `log`; `brief` paints the card.
+Face-ref recall and re-encounter are P2 (`docs/SHIP.md`).

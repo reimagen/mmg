@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { EnrichmentJob } from "../types";
+import { hallSend, hallStop, hermesEnabled } from "../hall/client";
 import { listPeople, upsertPerson } from "../memory";
 import { patchHealth } from "../supervisor";
 
@@ -30,8 +31,24 @@ export function enqueueEnrichment(
     source,
   };
   jobs.set(job.id, job);
-  void run(job);
+  void dispatch(job);
   return job;
+}
+
+async function dispatch(job: EnrichmentJob) {
+  if (hermesEnabled()) {
+    const sent = await hallSend({
+      room: "research",
+      text: `Enrich person ${job.person_id}. Query: ${job.query}. Write notes to the memory API. Call emit_handoff when done.`,
+    });
+    if (sent) {
+      job.result = "handed to hermes room:research";
+      patchHealth({ enrichment: "running", hermes: "queued" });
+      return;
+    }
+    patchHealth({ hermes: "down" });
+  }
+  await run(job);
 }
 
 export function listJobs() {
@@ -40,6 +57,7 @@ export function listJobs() {
 
 export function killEnrichment() {
   patchHealth({ enrichment: "killed" });
+  void hallStop("research");
   for (const job of jobs.values()) {
     if (job.status === "queued" || job.status === "running") {
       job.status = "skipped";

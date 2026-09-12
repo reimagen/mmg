@@ -1,12 +1,13 @@
 # Architecture — three isolated loops
 
-Judging criteria: exceptional engineering, robust orchestration, thoughtful failure handling.
+Judging: exceptional engineering, robust orchestration, thoughtful failure handling.
+**4-hour rank:** [`SHIP.md`](./SHIP.md). Camera / face-rec / Hermes-from-scratch are P2/P1.
 
 ```
- glasses (MentraOS)          browser panel (judges)
-        │                            │
-        ├─ mic ── audio ─────────────┤
-        └─ camera → sighting events ─┘  (never a Live video track)
+ browser panel (judges)          glasses (optional, P2)
+        │                                │
+        └──────── mic audio ─────────────┤
+                                         │ camera → sightings only if time
                      │
                      ▼
               ┌──────────────┐
@@ -16,52 +17,52 @@ Judging criteria: exceptional engineering, robust orchestration, thoughtful fail
                      │ session.delegation.created
                      ▼
               ┌──────────────┐
-              │ memory/      │  Jake FastAPI :7777  recall/brief <150ms
-              │ sidecar      │  NEVER behind the hall
+              │ memory/      │  Jake FastAPI :7777
+              │ sidecar      │  upsert / log / brief   NEVER behind hall
               └──────┬───────┘
                      │ thinking.append + commentary.append
-                     │ (paraphrase, not verbatim — UI card is ground truth)
+                     │ (paraphrase — UI card is ground truth)
                      ▼
               ┌──────────────┐
-              │ hall / Exa   │  SLOW PLANE  killable
-              │ send/stop    │  5-field packets when hall lands
+              │ research     │  SLOW PLANE  killable
+              │ Exa queue    │  P0: local timeout+skip
+              │ Hermes opt.  │  P1: hall :8768 if already up
               └──────────────┘
 ```
 
-Named orchestration for judges: **client delegation + memory sidecar + hall/Exa slow plane**.
-Hall contract: `docs/chief_of_staff_architecture.md`. GPT Live caveat: no speak-this-exact-string;
-consume packets only after the whisper card is on screen.
+Named orchestration: **client delegation + memory sidecar + killable research queue**.
+Hermes: [`HERMES.md`](./HERMES.md). Hall contract (reference):
+[`chief_of_staff_architecture.md`](./chief_of_staff_architecture.md).
 
 ## Supervisor
 
-Realtime loop is supervised separately from enrichment. A failed `/api/delegate`
-skips the card and the conversation continues. Every external call
-(Exa, treg, OpenRouter, socials) gets **timeout + budget + fallback**:
-cached result → skip gracefully. Demo never awaits the network on stage.
+Realtime is supervised separately from research. Failed `/api/delegate` skips
+the card; conversation continues. Every external call gets **timeout + skip**.
+Demo never awaits the network on stage.
 
-## Degraded modes (rehearse these)
+## Degraded modes (rehearse **one**)
 
-| Failure | Fallback |
-|---|---|
-| Glasses die | Phone / laptop mic, audio-only name capture |
-| Face-rec miss | Spoken-name enrollment (`nice to meet you, NAME`) |
-| GPT Live quota | OpenRouter text loop + TTS |
-| Enrichment crash | Conversation continues; card stays on last recall |
+| Failure | Fallback | Pri |
+|---|---|---|
+| No glasses | Browser mic | P0 (default path) |
+| Enrichment crash / timeout | Conversation continues; last banked card stays | P0 to show once |
+| Memory down | Un-augmented talk | P1 |
+| GPT Live quota | OpenRouter → Oxen | P1, only if quota dies |
+| Face-rec miss | Spoken-name enroll | P2 (enroll is already P0) |
 
 Token pools: **OpenAI → OpenRouter → Oxen.ai** (`https://hub.oxen.ai/api/ai`).
 
 ## Privacy
 
-Face recognition on **enrolled, consenting demo participants only** (pre-enroll 3–5 people).
-Strangers get audio-name capture, no camera lookup.
+No stranger camera lookup. Spoken-name capture is the enroll path.
 
 ## Team lanes
 
-| Person | Owns | Do not touch without a ping |
+| Person | Owns | Do not touch |
 |---|---|---|
-| **Jake** | `memory/**`, `docs/context_system_scope.md` | Live session, glasses, UI |
-| **Lisa** | `web/src/lib/live/**`, `web/src/lib/enrichment/**` | Memory schema |
-| **Saint** | `glasses/**`, MentraOS / sightings | Memory schema, Live session config |
-| **Luis** | `web/src/app/**` whisper-card UI, demo script | Memory schema |
+| **Jake** | `memory/**` | Live session, UI |
+| **Lisa** | `web/src/lib/live/**`, `enrichment/**`, `hall/**` | Memory schema, UI chrome |
+| **Saint** | `glasses/**` (P2) | Memory schema, Live session |
+| **Luis** | `web/src/app/page.tsx` | Live protocol, SQLite |
 
-Shared contracts: Jake's Memory API + `web/src/lib/types.ts`.
+Shared: Jake's Memory API + `web/src/lib/types.ts`.

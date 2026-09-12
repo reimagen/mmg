@@ -1,6 +1,9 @@
-# Judging map — score every criterion in the 2-minute demo
+# Judging map — 4-hour run of show
 
-Track 1–5 scores in [`SCORING.md`](./SCORING.md). This page is the run of show.
+Track 1–5 in [`SCORING.md`](./SCORING.md). Ranked plan: [`SHIP.md`](./SHIP.md).
+
+**Video proves:** live conversation → bank a contact → research them.
+Second-pass recognition is **not** in this script.
 
 ## 1. Core Requirements & Functionality
 
@@ -8,60 +11,58 @@ Track 1–5 scores in [`SCORING.md`](./SCORING.md). This page is the run of show
 
 | Demo beat | Proof |
 |---|---|
-| `Start GPT Live` | Agent runs **in the conversation**, not a chat form. Browser mic is the guaranteed path; glasses HUD is the same agent when present. |
-| Whisper card updates live | End-to-end: hear name → `recall`/`brief` → card + speech. |
-| No glasses | Do not stall. Input stays `browser`. Same tools, same memory. |
+| `Start GPT Live · browser mic` | Agent runs **in the conversation**, not a chat form. |
+| Whisper card banks a name | Spoken intro → `upsert` / `brief` → card + speech. |
+| A fact + a research line | `log_interaction` and Exa (or skip) show on card/ledger. |
+| No glasses | Do not stall. Input stays `browser`. |
 
-Script line: *“This is the copilot in the room. Glasses if we have them; this panel if we don’t.”*
+Script line: *“This is the copilot in the room. The panel is the room, not a backup app.”*
 
 ## 2. Innovation & Theme Alignment
 
 **Bar for 5:** a pattern you could not reproduce as a standalone chatbox.
 
-Chatbox would wait for you to type “who is this?” After the handshake it is already too late.
+A chatbox waits for you to type “save this person.” During the handshake that is
+already too late. We listen, bank, and research **while you talk**.
 
-The environment is the **live conversation** (wearable or browser mic at the event). Memory + sighting/name-capture exist because you cannot stop to prompt. Coach/roast ride the same loop.
-
-Script line: *“You can’t Alt-Tab a chatbot while shaking someone’s hand.”*
+Script line: *“You can’t Alt-Tab a CRM while shaking someone’s hand.”*
 
 ## 3. Technical Execution & Integration
 
 **Bar for 5:** exceptional engineering, robust orchestration, thoughtful failure handling.
 
-Named architecture (say this out loud):
+Say out loud:
 
-**Client delegation + memory sidecar (fast) + hall/Exa queue (slow).**
+**Client delegation + memory sidecar (fast) + killable research queue (slow).**
 
-| Failure | What judges should see |
+Hermes/hall is that queue when plugged in. The video does not need Hermes live.
+
+| Failure (pick **one** for the tape) | What judges should see |
 |---|---|
-| Glasses missing / die | Browser mic, no restart of the agent |
-| Face miss | “nice to meet you, NAME” enrolls; no stranger face lookup |
+| No glasses | Browser mic, same agent |
+| Exa/Hermes timeout | Skip; conversation never waits |
 | Memory down | Agent keeps talking, card says un-augmented |
-| Exa/treg timeout | Skip; next recall may be stale; conversation never waits |
-| GPT Live quota | OpenRouter → Oxen (`https://hub.oxen.ai/api`) |
-| Hall packet | UI card is verbatim ground truth; voice may paraphrase |
 
-Privacy: enrolled faces only (3–5 people).
+Do not spend the 2 minutes on face-miss, quota failover, and hall packets.
 
 ## 4. Usefulness & Agentic Experience
 
-**Bar for 5:** context used intelligently, native to the environment, controllable.
+**Bar for 5:** context used intelligently, native, controllable.
 
-| Control | What the wearer/operator gets |
+| Control | What they get |
 |---|---|
-| Whisper card | Name, how you met, one open thread — 2 sentences, no lecture |
-| Coach / roast | Same memory, different mouth. Operator toggles. |
-| Memory panel | Every person, fact, timestamp — “it remembers so you don’t have to” |
-| Consent | Strangers are name-capture only |
+| Whisper card | Name + what we just banked + one research line. 2 sentences. |
+| Memory ledger | Person, facts, timestamps — close shot |
+| Consent | Spoken-name enroll; no stranger camera lookup |
 
-The agent **does** recall, enroll, log, brief, and enrich. It does **not** dump a transcript of bystanders.
+The agent **does** enroll, log, brief, and enrich. It does **not** dump bystander
+transcripts. Roast and second-person recall are optional if time.
 
-## 2-minute run of show (hit all four)
+## 2-minute run of show
 
-0:00 Browser (or glasses) — *criterion 1, environment*  
-0:20 Approach / say “Jake” — card whispers schema thread — *criterion 2 + 4*  
-0:50 Talk, new fact lands on the card — *agentic, not Q&A*  
-1:10 Second enrolled person — instant open thread — *memory*  
-1:25 Roast-me — one laugh — *controllable*  
-1:40 Kill/skip enrichment or unplug glasses story — *criterion 3*  
-1:55 Panel: every fact, timestamped — freeze
+0:00 Browser mic — *C1, environment*  
+0:20 Spoken intro — card banks them — *C2 + C4*  
+0:50 Talk, fact lands on ledger — *agentic, not Q&A*  
+1:10 Research line (or honest skip) — *slow plane*  
+1:35 One failure beat (no glasses *or* kill Exa) — *C3*  
+1:50 Ledger close — freeze

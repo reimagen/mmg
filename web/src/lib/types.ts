@@ -73,6 +73,16 @@ export type EnrichmentJob = {
   result?: string;
 };
 
+export type HallPacket = {
+  room: string;
+  state: string;
+  say: string;
+  did: string;
+  need: string;
+  next: string;
+  packet_id?: string;
+};
+
 export type LoopHealth = {
   realtime: "live" | "degraded" | "down";
   memory: "ok" | "down";
@@ -80,6 +90,7 @@ export type LoopHealth = {
   input: "glasses" | "browser";
   glasses: boolean;
   model_pool: "openai" | "openrouter" | "oxen";
+  hermes: "off" | "queued" | "down";
 };
 
 export const MEMORY_TOOLS = [
