@@ -47,8 +47,11 @@ assert.equal(m2.listPeople().length, 2, "rows persist after reopen");
 
 // F3 enrich
 assert.equal(e.researchQuery({ ...ada, facts: [ada.facts[0]] }), "", "no employer → unqueryable");
-assert.equal(e.researchQuery({ display_name: "Seth Tam", org: "", facts: [], first_met: { event: "x", ts: "2026-01-01T00:00:00Z" }, aliases: [], id: "p", face_ref: null, enrolled: false, open_threads: [], last_seen: "2026-01-01T00:00:00Z" }), "", "a full name with no employer is still unqueryable");
-// a name must match on a word boundary, and needs corroboration even when it is a full name
+const noOrg = { id: "p", display_name: "Seth Tam", aliases: [], face_ref: null, enrolled: false, first_met: { event: "x", ts: "2026-01-01T00:00:00.000Z" }, facts: [], open_threads: [], last_seen: "2026-01-01T00:00:00.000Z" };
+assert.ok(e.researchQuery(noOrg).startsWith('"Seth Tam"'), "a full name is searchable on its own");
+// a real find banks even when the page never mentions their employer (Seth's bug report did not)
+assert.equal(e.absorbResearch({ ...noOrg, org: "Oxen AI" }, [{ title: "Grammar parser crash", url: "https://github.com/x/1", text: "Seth Tam reports a grammar parser crash on 0.4.20, fine on 0.4.16." }]).length, 1, "a full-name find with no employer on the page still banks");
+// a name must match on a word boundary: "Seth Tams" is not "Seth Tam"
 assert.deepEqual(e.absorbResearch({ ...ada2, display_name: "Seth Tam", org: "Oxen AI" }, [{ title: "Seth Tams on SOLIDWORKS", url: "https://x.com/s", text: "Seth Tams presents at Oxen AI" }]), [], "Seth Tams is not Seth Tam");
 assert.equal(e.researchQuery(ada2), '"Ada" Oxen growth', "detected employer beats raw transcript keywords");
 // a bare first name with no corroborating context banks nothing

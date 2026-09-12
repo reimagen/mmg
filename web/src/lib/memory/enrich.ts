@@ -30,11 +30,10 @@ export function researchQuery(person: Person): string {
   // The employer the model understood beats anything a regex can scrape; the detector is the floor.
   const signals = detect(live.join(". "));
   const company = person.org?.trim() || signals.find((s) => s.kind === "company")?.value;
-  // No employer or project means nothing to pin the search to, and an unpinned search finds someone
-  // else with the same name. That is a skip, not a bad search.
-  if (!company) return "";
   const role = signals.find((s) => s.kind === "role")?.value;
-  return [`"${name}"`, company, role ?? ""].join(" ").trim().slice(0, 200);
+  // A full name is searchable on its own; a bare first name without an employer is not.
+  if (!company && !name.includes(" ")) return "";
+  return [`"${name}"`, company ?? "", role ?? ""].join(" ").trim().slice(0, 200);
 }
 
 /**
@@ -51,13 +50,15 @@ export function absorbResearch(
   context: string[] = [],
 ): Fact[] {
   const name = person.display_name.trim().toLowerCase();
+  const fullName = name.includes(" ");
   const tokens = [person.org ?? "", ...context]
     .map((c) => c.toLowerCase().trim())
     .filter((c) => c.length > 2);
-  // A name alone is never identity, a full name included: "Seth Tam" matched a GitHub bug filed by
-  // a different Seth, and a SOLIDWORKS talk by "Seth Tams". Without something the person actually
-  // told us to corroborate against, we bank nothing.
-  if (tokens.length === 0) return [];
+  // A full name matched on a word boundary is enough on its own. Requiring the employer in the
+  // result too was overcorrection: it threw away a real find (Seth's grammar-parser bug report,
+  // which mentions neither Oxen nor the event) to prevent a miss that word boundaries already
+  // prevent. A single first name still needs corroboration — "Jake" alone is every Jake alive.
+  if (!fullName && tokens.length === 0) return [];
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const named = new RegExp(String.raw`\b` + escaped + String.raw`\b`);
   const seen = new Set<string>();
@@ -67,7 +68,7 @@ export function absorbResearch(
     if (!r.url || seen.has(r.url)) continue;
     const hay = [r.title, r.text, ...(r.highlights ?? [])].join(" ").toLowerCase();
     if (!named.test(hay)) continue;
-    if (!tokens.some((t) => hay.includes(t))) continue;
+    if (!fullName && !tokens.some((t) => hay.includes(t))) continue;
     seen.add(r.url);
     const title = tidy(r.title ?? "") || "untitled";
     // A "highlight" is often just rule lines or nav junk; keep it only if it's really a sentence.

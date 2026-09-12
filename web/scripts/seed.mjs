@@ -25,6 +25,17 @@ if (process.argv.includes("--empty")) {
     ["person_teddy", "Teddy Thoren", ["Teddy"], "", "Floater; keeps the backup GPU rig"],
     ["person_eric", "Eric Lawrence", ["Eric"], "", "Floater; testing"],
   ];
+  // Verified by hand, kept across reseeds, and carrying the link it came from.
+  const EXTRA = {
+    person_seth: [
+      {
+        text: "Hit a grammar parser crash with Claude Code on 0.4.20 — worked fine on 0.4.16",
+        source: "manual",
+        ts,
+        url: "https://github.com/lmstudio-ai/lmstudio-bug-tracker/issues/2236",
+      },
+    ],
+  };
   for (const [id, name, aliases, org, role] of team) {
     upsertPerson({
       id,
@@ -34,7 +45,7 @@ if (process.argv.includes("--empty")) {
       enrolled: false,
       face_ref: null,
       first_met: met,
-      facts: [{ text: role, source: "enrollment", ts }],
+      facts: [{ text: role, source: "enrollment", ts }, ...(EXTRA[id] ?? [])],
       open_threads: [],
     });
   }
