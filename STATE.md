@@ -45,7 +45,7 @@ tags: [state, mmg, hackathon]
 0:50 a fact lands on card/ledger · 1:10 research returns or honest skip (sourced line) ·
 1:40 ONE failure (kill enrichment *or* "no glasses, same agent") · 1:50 ledger close, freeze.
 
-## NEXT (Jake)
+## NEXT (Jake) — campaign `how/campaigns/campaign_memory_p0.md` (M1→M4, exit gate, then P1)
 
 1. `upsert_person` / `log_interaction` / `brief` real for the spoken-name path; ledger
    fields the UI needs: facts with `source` (`live|exa|enrollment`) + `ts`.

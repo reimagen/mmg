@@ -47,6 +47,13 @@ who/                        WHO is involved
 4. **Live feed**: the team Discord group DM auto-ingests every 30 min →
    `operations_jake.aDNA/what/context/comms/` — check it before asking a human.
 5. Event-clock bias: terse, paste-ready, smallest thing that demos.
+6. **Two-way mirror (standing rule, Jake 2026-09-12 12:40):** ANY touch of this graph starts
+   with `how/tools/mirror.sh pull` (repo → CG: read the doc/contract delta, fold it into
+   STATE/decisions/scope) and ends with `how/tools/mirror.sh push` (CG → repo: push graph,
+   subtree-pull it into `reimagen/mmg` at `MMG.aDNA/`, push). The repo is Lisa's; the
+   graph mirrors it, never the reverse. Contract source of truth = `web/src/lib/types.ts`.
+7. Active campaign: `how/campaigns/campaign_memory_p0.md` — Oxen precursor (Phase 0) then
+   P0 missions M1–M4 in order; Phase 2 only after the exit gate.
 
 ## Startup
 
