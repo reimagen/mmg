@@ -394,3 +394,30 @@ than guess."* The bad facts are gone from the DB and the wiki.
 
 **If you see a fact you do not recognise, it has a `url` — follow it.** That is what provenance is
 for, and it is why every researched line carries one.
+
+---
+
+## 16:05 — correction to the entry above: that fact was right, and I over-corrected
+
+Jake confirmed the grammar-parser bug report **is** Seth's. The retrieval was working; my fix would
+have thrown away a genuine find to prevent a miss that was already handled elsewhere.
+
+What actually failed was narrower than I wrote: the seeded name was wrong ("Seth Tam" vs **Seth
+Tamrowski**), and the name match was a **substring**, so "Seth Tam" also hit "Seth Tams" and pulled
+in a SOLIDWORKS talk in Lethbridge. Word boundaries fix that on their own.
+
+**Where the gate landed:**
+
+| Name we have | Rule |
+|---|---|
+| Full name | A word-boundary match is enough. The page does not have to mention their employer — Seth's bug report mentions neither Oxen nor the event, and it is still the right person. |
+| First name only | Still needs a corroborating token (their employer or project). "Jake" alone is every Jake alive. |
+
+Requiring the employer to appear in every result was the overcorrection. Reverted; word-boundary
+matching kept.
+
+The fact is back on Seth's record as `source: "manual"` with its URL, seeded so it survives a reset.
+With his real surname, live research now also finds his LinkedIn and an Oxen.AI webinar post.
+
+**Lesson for the demo:** a surprising fact is not automatically a wrong one. Every researched line
+carries a `url` — follow it before deciding.
