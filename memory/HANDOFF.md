@@ -114,3 +114,81 @@ commentary on output-idle already, so the card just lands later. Lever if needed
 
 Seen in Lisa's `extractFacts` (not touched): stripping the name with a bare regex turns
 "robotics" into "rotics" for a person named Bo — use `\b${name}\b`.
+
+---
+
+## 13:55 addendum — detection, real Exa research, and a runtime API for the UI
+
+**Nothing in `web/src/app/**` changed — that's Luis's lane.** Everything below is the backend
+plus one new read-only route to consume.
+
+### `GET /api/runtime[?person=<id>]` — the backend, presentable
+
+```json
+{ "backend": { "kind": "model|regex", "model": "gpt-5.4-mini", "store": "SQLite · node:sqlite · web/data/memory.db", "wiki_dir": "…", "mode": "coach" },
+  "health": { … LoopHealth … },
+  "counts": { "people": 6, "enrolled": 1 },
+  "jobs":   [ { "id": "job_…", "status": "done|skipped|failed", "source": "exa", "result": "2 sourced fact(s) from 5 results" } ],
+  "traces": [ { "ts": "…", "heard": "…", "signals": [ … ], "tools": ["upsert_person → person_ab12", "brief"], "card": "…", "ms": 5400, "backend": "model" } ],
+  "page":   "---\ntype: person\n… the markdown wiki page of the focus person …" }
+```
+
+Everything needed to show what the system is doing: which backend, which tools ran this turn,
+how long, what was detected, the research queue, and the page the agent maintains. `traces` is the
+last 12 delegations, newest first. `page` is null unless `?person=` is passed.
+
+### Detection — `POST /api/delegate` now returns `signals`
+
+Every delegation carries `signals: Signal[]` (`web/src/lib/types.ts`), backend-independent:
+
+| kind | example value | use |
+|---|---|---|
+| `name` | `Sam Altman` | surname captured when spoken — it's what makes research work |
+| `role` | `CEO` | card + research query |
+| `company` | `OpenAI`, `aDNA` | also from "working on X and Y" |
+| `commitment` | `I will send you an invite` | becomes an open thread automatically |
+| `ask` | `What do you build?` | a question aimed at the operator |
+| `contact` | `ada@oxen.ai`, `@handle` | |
+| `correction` | `actually it's spelled…` | |
+
+Each signal carries `value`, the `text` span it came from, and a confidence, so the UI can show
+*why* something was banked.
+
+### Research actually runs now (Exa key is in `web/.env.local`)
+
+`researchPerson()` in `web/src/lib/memory/enrich.ts` owns the loop: detected context → query →
+Exa → name gate → structured facts. `queue.ts` `run()` calls it (that's the patch this file asked
+for; the `[exa] exa stub…` fact is gone). **`Fact` gained an optional `url`** — a researched line
+can be traced to its source, so a card can link out instead of asserting.
+
+**The gate is deliberately strict.** A single-word name banks nothing unless a result also
+contains something the person actually said (their company or project). Searching "Jake" returns
+every Jake alive; a wrong-person fact on a whisper card is worse than an empty one. Full names
+stand on their own. Honest skips read like `5 results, none confidently this person — skipped
+rather than guess` in `jobs[].result`.
+
+Live trace, one turn: *"nice to meet you, Sam Altman. I am the CEO at OpenAI and I will send you
+an invite"* → live facts `CEO at OpenAI` + `promised to send an invite` · open thread
+`Awaiting the invite` · exa facts from wikipedia.org and forbes.com with URLs · card
+`Sam Altman — CEO at OpenAI. Promised to send an invite.`
+
+### `POST /api/enrich` — `query` is now optional
+
+Pass `{ "person_id": "person_ab12" }` and the query is composed from that person's detected
+context. Handy for a "research this person" button that doesn't need to know the query language.
+
+### III pass — findings in the UI I did NOT fix (Luis's lane)
+
+Reviewed `page.tsx` before the lane call; reverted my edits. Four findings worth a look:
+
+1. **`Recall Jake` recalls whoever is newest**, not Jake — the label is hardcoded, the handler uses
+   `cardPerson ?? people[0]`. On a seeded demo it recalls Maya Chen.
+2. **`memory · N enrolled`** counts everyone; almost nobody is enrolled (`enrolled` means a face
+   ref). `counts` in `/api/runtime` gives both numbers honestly.
+3. **Fact provenance is invisible** — the ledger prints `facts[0].text` with no `source`, no `ts`,
+   no link, and the whole claim of the product is that lines are sourced. `Fact.url` is there now.
+4. **`LoopHealth` renders nowhere** — the rehearsed failure beat (kill research) has no on-screen
+   proof, which is the C3 scoring line. `/api/runtime` returns health + jobs for a status strip.
+
+Also pre-existing, not mine: `page.tsx:44` fails lint (`setState` synchronously inside an effect),
+and `/api/health` polls every 2 s even when the tab is hidden.
