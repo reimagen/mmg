@@ -1,11 +1,9 @@
 // Wipe + load the demo cast. Run: npm run seed  (from web/)
-import { rmSync } from "node:fs";
 import { join } from "node:path";
 
 const db = process.env.MEMORY_DB_PATH ?? join(process.cwd(), "data", "memory.db");
-for (const s of ["", "-wal", "-shm"]) rmSync(db + s, { force: true });
-
-const { upsertPerson, listPeople } = await import("../src/lib/memory/sqlite.ts");
+const { upsertPerson, listPeople, wipe } = await import("../src/lib/memory/sqlite.ts");
+wipe(); // rows, not the file — a running next dev keeps its handle
 const ts = new Date().toISOString();
 const EVENT = "OpenAI Global Hackathon @ The KINN";
 const fact = (text, source = "enrollment") => ({ text, source, ts });

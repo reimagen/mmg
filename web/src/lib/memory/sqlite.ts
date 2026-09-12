@@ -221,6 +221,12 @@ export function brief(personId: string): string {
   return `${person.display_name} — ${dot(s1)}. ${dot(s2)}.`.slice(0, 220);
 }
 
+/** Demo reset: clear rows in place (safe under a running next dev — never unlink the file). */
+export function wipe() {
+  db().exec("DELETE FROM interaction; DELETE FROM person;");
+  writeIndex([]);
+}
+
 /** F5: newest last_seen first. */
 export function listPeople(): Person[] {
   try {
