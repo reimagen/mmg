@@ -98,6 +98,11 @@ assert.equal(sam.display_name, "Sam");
 assert.ok(sam.aliases.includes("Stan"), "old spelling kept as an alias: " + JSON.stringify(sam.aliases));
 assert.equal(m.recall({ name: "Stan" })?.id, stan.id, "a later mishearing still finds them");
 assert.equal(m.recall({ name: "Sam" })?.id, stan.id);
+// a caller that forgets the id but offers the old spelling as an alias must not fork the record
+const countBefore = m.listPeople().length;
+const again = m.upsertPerson({ display_name: "Sam", aliases: ["Stan"] });
+assert.equal(again.id, stan.id, "alias match merges instead of creating a duplicate");
+assert.equal(m.listPeople().length, countBefore, "no second person");
 assert.deepEqual(d.detect("actually it's Sam").filter((x) => x.kind === "correction").map((x) => x.value), ["Sam"]);
 assert.ok(d.detect("it is S-A-M").some((x) => x.kind === "correction" && x.value === "Sam"), "spelled-out name");
 

@@ -2,6 +2,7 @@ import { listPeople } from "@/lib/memory";
 import { recentInteractions } from "@/lib/memory/sqlite.ts";
 import { renderPersonPage } from "@/lib/memory/wiki.ts";
 import type { Signal } from "@/lib/types";
+import { knownVocabulary } from "./vocabulary";
 
 /**
  * System prompt for the delegation backend — the LLM-Wiki keeper.
@@ -50,7 +51,16 @@ export async function buildInstructions(lastPersonId?: string, signals: Signal[]
   const detected = signals.length
     ? signals.map((s) => `- ${s.kind}: ${s.value}  (heard: "${s.text}")`).join("\n")
     : "- (nothing)";
+  const vocabulary = await knownVocabulary();
   return `${KEEPER_RULES}
+
+## Names and terms already known in this room
+${vocabulary.join(", ")}
+The transcript is speech-to-text and mishears names ("Sam" arrives as "Stan"). If a heard NAME is
+close to one on this list and the conversation fits that person, it IS them — recall and correct,
+do not bank a lookalike.
+This list is for un-mishearing names only. Never assign a company, role, or fact to someone because
+it appears here — an employer is banked only when this person said it in the transcript.
 
 ## Detected in this turn (heuristics — verify against the transcript, bank what is true)
 ${detected}

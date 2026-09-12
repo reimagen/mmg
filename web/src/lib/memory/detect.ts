@@ -19,7 +19,7 @@ const NAME = /(?:nice to meet you|my name is|i am|i'm|this is|call me)[,\s]+([A-
 const ROLE =
   /\bI(?:'m| am)?\s+(?:the\s|a\s|an\s)?((?:co-)?(?:founder|ceo|cto|coo|head|lead|engineer|designer|researcher|investor|pm|product manager|professor|student|recruiter|analyst|consultant)[a-z ]{0,20}?)\b/gi;
 const RUNS = /\bI\s+(?:run|lead|head|own|founded|started|manage)\s+([a-z][a-z ]{2,28}?)\b(?=\s+(?:at|for|with)\b|[.,!?]|$)/gi;
-const COMPANY = /\b(?:at|for|with|joined|work at)\s+((?:[A-Z][\w&'-]*)(?:\s[A-Z][\w&'-]{1,})?)/g;
+const COMPANY = /\b(?:at|for|with|from|of|joined|work at|works at)\s+((?:[A-Z][\w&'-]*)(?:\s[A-Z][\w&'-]{1,})?)/g;
 /** "I'm working on aDNA and ailedger" — the thing someone is building is the best research handle there is. */
 const PROJECT =
   /\b(?:working on|work on|building|shipping|launching|behind)\s+([A-Za-z][\w&'.-]*(?:\s[A-Z][\w&'.-]*)?(?:\s*(?:,|and|&)\s*[A-Za-z][\w&'.-]*(?:\s[A-Z][\w&'.-]*)?){0,2})/g;
@@ -32,6 +32,9 @@ const SPELLED = /\b([A-Za-z](?:[\s.-][A-Za-z]){2,})\b/g;
 const EMAIL = /\b[\w.+-]+@[\w-]+\.[\w.]{2,}\b/g;
 const HANDLE = /(?:^|\s)(@[a-z0-9_]{2,30})\b/gi;
 const URL = /\bhttps?:\/\/[^\s)]+|\b(?:[a-z0-9-]+\.)+(?:com|ai|dev|io|org|net|co)\b(?:\/[^\s)]*)?/gi;
+
+/** Words that follow a name but are never part of it. */
+const CONNECTOR = new Set(["from", "of", "at", "with", "for", "and", "in", "on", "who", "here", "over", "works", "work"]);
 
 const CONFIDENCE: Record<SignalKind, number> = {
   name: 0.9, role: 0.75, company: 0.6, commitment: 0.7, ask: 0.8, contact: 0.95, correction: 0.5,
@@ -66,8 +69,11 @@ export function detect(text: string): Signal[] {
     // "I am currently working on…" — an adverb is not a name; "I am an engineer" is not "An Engineer".
     const [first, ...rest] = m[1].split(/\s+/);
     if (STOP.has(first.toLowerCase()) || /ly$|ing$|ed$/i.test(first)) return;
-    // A surname only counts if it isn't a verb phrase ("I'm Jake working on…").
-    const last = rest[0] && !/ing$|ed$/i.test(rest[0]) ? ` ${capitalize(rest[0])}` : "";
+    // A surname only counts if it isn't a verb or a connector ("I'm Seth from Oxen AI").
+    const surname = rest[0];
+    const isSurname =
+      surname && !/ing$|ed$/i.test(surname) && !STOP.has(surname.toLowerCase()) && !CONNECTOR.has(surname.toLowerCase());
+    const last = isSurname ? ` ${capitalize(surname)}` : "";
     push(out, "name", `${capitalize(first)}${last}`, m[0]);
   });
   all(ROLE, text, (m) => push(out, "role", m[1], m[0]));

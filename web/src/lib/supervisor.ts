@@ -111,10 +111,12 @@ export const BACKEND_TOOLS = [
   {
     type: "function" as const,
     name: "upsert_person",
-    description: "Create or update a person. Enroll only with consent.",
+    description:
+      "Create or update a person. Pass id to correct someone already in memory (a misheard name) — without it a correction creates a second record. Enroll only with consent.",
     parameters: {
       type: "object",
       properties: {
+        id: { type: "string", description: "Existing person_id. Required when correcting a name." },
         display_name: { type: "string" },
         aliases: { type: "array", items: { type: "string" } },
         face_ref: { type: "string" },

@@ -137,9 +137,17 @@ export function recall(query: RecallQuery): Person | null {
 
 export function upsertPerson(input: UpsertPersonInput): Person {
   const ts = nowIso();
-  const existing = input.id
-    ? byId(input.id)
-    : find({ name: input.display_name, face_ref: input.face_ref ?? undefined });
+  // Without an id, match on the name, then on any alias offered. A caller correcting "Stan" to
+  // "Sam" usually passes the old spelling as an alias; that is the same person, not a new one.
+  const existing =
+    (input.id ? byId(input.id) : null) ??
+    (input.id
+      ? null
+      : find({ name: input.display_name, face_ref: input.face_ref || undefined }) ??
+        (input.aliases ?? []).reduce<Person | null>(
+          (hit, alias) => hit ?? find({ name: alias }),
+          null,
+        ));
 
   if (existing) {
     // Speech-to-text mishears names ("Sam at OpenAI" → "Stan"). When a record is renamed, keep the

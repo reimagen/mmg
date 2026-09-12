@@ -17,6 +17,7 @@ export async function runMemoryTool(name: string, args: Record<string, unknown>)
         ts: new Date().toISOString(),
       }));
       return upsertPerson({
+        id: str(args.id),
         display_name: String(args.display_name),
         aliases: asStringArray(args.aliases),
         face_ref: str(args.face_ref) ?? null,

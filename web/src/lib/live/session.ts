@@ -14,6 +14,9 @@ export function liveSessionConfig() {
   return {
     model: "gpt-live-1",
     instructions: LIVE_INSTRUCTIONS,
+    // No audio.input here: this API build rejects it outright ("Unknown parameter:
+    // 'session.audio.input'"), so the recognizer cannot be biased toward the names in the room
+    // from the session config. See memory/HANDOFF.md for the two routes that can.
     audio: { output: { voice: "marin" } },
     delegation: { type: "client" as const },
   };

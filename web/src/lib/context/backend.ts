@@ -2,9 +2,9 @@ import { BACKEND_TOOLS } from "@/lib/supervisor";
 import { runMemoryTool } from "@/lib/live/tools";
 import { handleClientDelegation } from "@/lib/live/delegation";
 import { enqueueEnrichment } from "@/lib/enrichment/queue";
-import { brief, listPeople } from "@/lib/memory";
+import { brief, listPeople, upsertPerson } from "@/lib/memory";
 import type { DelegateRequest, DelegateResult } from "@/lib/live/types";
-import type { Person } from "@/lib/types";
+import type { Person, Signal } from "@/lib/types";
 import { buildInstructions } from "./prompt";
 import { detect } from "@/lib/memory/detect";
 
@@ -89,7 +89,7 @@ async function withModel(req: DelegateRequest, key: string): Promise<DelegateRes
     const calls = data.output.filter((o): o is Extract<OutputItem, { type: "function_call" }> => o.type === "function_call");
     if (!calls.length) {
       const text = outputText(data);
-      return finish(req, parseAnswer(text), person, trace);
+      return finish(req, parseAnswer(text), person, trace, signals);
     }
 
     input = [];
@@ -105,9 +105,27 @@ async function withModel(req: DelegateRequest, key: string): Promise<DelegateRes
   throw new Error("tool loop exceeded MAX_ROUNDS");
 }
 
-async function finish(req: DelegateRequest, answer: Answer, person: Person | null, trace: string[]): Promise<DelegateResult> {
+async function finish(
+  req: DelegateRequest,
+  answer: Answer,
+  person: Person | null,
+  trace: string[],
+  signals: Signal[] = [],
+): Promise<DelegateResult> {
   if (!person && answer.person_id) {
     person = (await listPeople()).find((p) => p.id === answer.person_id) ?? null;
+  }
+  // Safety net: a spoken name must always be banked. The model sometimes narrates the intro turn
+  // without calling a tool; the detector is deterministic, so fall back to it rather than lose
+  // the person. upsertPerson merges by name, so this can't create a duplicate.
+  const heardName = signals.find((s) => s.kind === "name")?.value;
+  if (!person && heardName) {
+    person = await upsertPerson({
+      display_name: heardName,
+      enrolled: false,
+      facts: [{ text: "Met via spoken-name capture (no camera lookup)", source: "live", ts: new Date().toISOString() }],
+    });
+    trace.push(`fallback upsert_person → ${person.id} (model banked nothing)`);
   }
   let card = answer.card.trim().slice(0, 220);
   if (person) {
