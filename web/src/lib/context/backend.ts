@@ -1,6 +1,7 @@
 import { BACKEND_TOOLS } from "@/lib/supervisor";
 import { runMemoryTool } from "@/lib/live/tools";
 import { enqueueEnrichment } from "@/lib/enrichment/queue";
+import { wearerName } from "@/lib/wearer";
 import { brief, listPeople, upsertPerson } from "@/lib/memory";
 import type { DelegateRequest, DelegateResult } from "@/lib/live/types";
 import type { Person, Signal } from "@/lib/types";
@@ -15,7 +16,7 @@ import { detect } from "@/lib/memory/detect";
  */
 
 const MODEL = process.env.BACKEND_MODEL ?? "gpt-5.6-luna";
-const WEARER = process.env.WEARER_NAME ?? "Saint Louis";
+
 const ROUND_MS = 20_000;
 const TOTAL_MS = 60_000;
 
@@ -54,7 +55,7 @@ async function withModel(req: DelegateRequest, key: string): Promise<DelegateRes
   let input: unknown[] = [
     {
       role: "user",
-      content: `delegation_id: ${req.delegation_id}\nThe wearer of the glasses (the operator, "Mac's" human) is ${WEARER}. He is not a new person; never bank him.\n\nTranscript (latest last):\n${req.transcripts
+      content: `delegation_id: ${req.delegation_id}\nThe wearer of the glasses (the operator, "Mac's" human) is ${wearerName}. He is not a new person; never bank him.\n\nTranscript (latest last):\n${req.transcripts
         .map((t) => `${t.role}: ${t.text}`)
         .join("\n")}`,
     },

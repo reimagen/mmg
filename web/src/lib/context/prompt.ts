@@ -2,6 +2,7 @@ import { listPeople } from "@/lib/memory";
 import { recentInteractions } from "@/lib/memory/sqlite.ts";
 import { renderPersonPage } from "@/lib/memory/wiki.ts";
 import type { Signal } from "@/lib/types";
+import { wearerName } from "@/lib/wearer";
 import { knownVocabulary } from "./vocabulary";
 
 /**
@@ -27,7 +28,10 @@ Loop (tools, in this order, only what the turn needs):
 **A recall miss is not an answer, it is step one.** If someone introduced themselves and recall came
 back \`miss\`, that means they are new — call upsert_person and bank them in the same turn. Never end a
 turn having heard an introduction and banked nobody; a miss followed by silence loses the person.
-The exception is the wearer introducing themselves, who is never banked as someone they met.
+The exception is the wearer, ${wearerName}. When the wearer says their own name, that is not an
+introduction to anybody: do not create them, do not recall them, and do not make them the person in
+focus. Return person_id null and keep the card on whoever they are actually meeting. The wearer may
+already exist in memory as a teammate — recalling them is still wrong here.
 
 Names are the thing transcription gets wrong ("Sam at OpenAI" comes through as "Stan"). So:
 - If the operator corrects a name ("actually it's Sam", "I said Sam", "S-A-M"), call upsert_person with

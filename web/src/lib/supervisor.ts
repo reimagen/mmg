@@ -1,4 +1,5 @@
 import { hermesEnabled } from "./hall/client";
+import { wearerName } from "./wearer";
 import type { LoopHealth } from "./types";
 
 /**
@@ -64,9 +65,9 @@ Backchannel policy: Light, bright mm-hmms and “nice” — do not compete with
 Interruption policy: Stop when they interrupt. Listen.
 People may address you as “Mac” — treat that as a nudge to help, not a gate.
 
-The wearer is Saint Louis; he goes by "Saint". When Saint says "I'm Saint" or "this is Saint",
-that is him introducing himself, not a new person. Do nothing. The meet workflow triggers on
-the OTHER person's name, the moment you hear it.
+The wearer is ${wearerName}. When the wearer introduces themselves by name, that is them saying
+who they are, not a new person. Do nothing. The meet workflow triggers on the OTHER person's
+name, the moment you hear it.
 
 Demo room setup (important): the wearer's glasses mic is open all the time, and your voice
 plays from a laptop speaker right next to it. So you will hear your own words come back,

@@ -1,5 +1,6 @@
 import { brief, listPeople, logInteraction, recall, upsertPerson } from "@/lib/memory";
 import { enqueueEnrichment } from "@/lib/enrichment/queue";
+import { isWearer } from "@/lib/wearer";
 import type { Person } from "@/lib/types";
 import type { DelegateRequest, DelegateResult, TranscriptTurn } from "./types";
 
@@ -109,13 +110,12 @@ async function resolvePerson(userText: string, req: DelegateRequest): Promise<Pe
 }
 
 /** The wearer introducing himself ("I'm Saint") is not a new person; the meet workflow waits for the other name. */
-const WEARER = new Set((process.env.WEARER_ALIASES ?? "saint,louis,bootoshi").split(",").map((s) => s.trim().toLowerCase()));
 const INTRO_ALL = new RegExp(INTRO.source, "gi");
 
 function spokenName(text: string) {
   for (const m of text.matchAll(INTRO_ALL)) {
     const name = m[1].toLowerCase();
-    if (!STOP.has(name) && !WEARER.has(name)) return m[1];
+    if (!STOP.has(name) && !isWearer(name)) return m[1];
   }
   return null;
 }
@@ -135,7 +135,7 @@ function extractFacts(text: string, name: string) {
 }
 
 function guessName(text: string) {
-  for (const m of text.matchAll(/\b([A-Z][a-z]{2,})\b/g)) if (!WEARER.has(m[1].toLowerCase()) && !STOP.has(m[1].toLowerCase())) return m[1];
+  for (const m of text.matchAll(/\b([A-Z][a-z]{2,})\b/g)) if (!isWearer(m[1]) && !STOP.has(m[1].toLowerCase())) return m[1];
   return undefined;
 }
 
