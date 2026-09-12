@@ -25,7 +25,8 @@ Judging: exceptional engineering, robust orchestration, thoughtful failure handl
                      ▼
               ┌──────────────┐
               │ research     │  SLOW PLANE  killable
-              │ Exa queue    │  P0: local timeout+skip
+              │ Exa queue    │  query from detected context; name gate;
+              │              │  facts carry their source url; timeout+skip
               │ Hermes opt.  │  P1: hall :8768 if already up
               └──────────────┘
 ```

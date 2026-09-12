@@ -13,7 +13,7 @@ Second-pass recognition is **not** in this script.
 |---|---|
 | **Talk** (browser mic) | Agent runs **in the conversation**, not a chat form. |
 | Whisper card banks a name | Spoken intro → `upsert` / `brief` → card + speech. |
-| A fact + a research line | `log_interaction` and Exa (or skip) show on card/ledger. |
+| A fact + a research line | `log_interaction` and Exa show on card/ledger **with the source**, or an honest skip ("none confidently this person"). |
 | No glasses | Do not stall. Input stays `browser`. |
 
 Script line: *“This is Mac, in the room. The panel is the room, not a backup app.”*

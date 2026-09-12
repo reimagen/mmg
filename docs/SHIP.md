@@ -19,10 +19,11 @@ record. Conversation never waits on the network.
 | Pri | Item | Status | Owner | Do not |
 |---|---|---|---|---|
 | **P0** | Browser mic → **Talk** → Mac hears/speaks | **Done.** ICE hang fixed; Hang up cuts billing. Voice: `marin`. | Lisa | Typed chat |
-| **P0** | Spoken name → card banks a person | **Done enough to demo** (Mickey enrolled). First/last split still sloppy. | Lisa | Invent people |
+| **P0** | Spoken name → card banks a person | **Done enough to demo** (Mickey enrolled). Surname now captured by `detect.ts` ("nice to meet you, Sam Altman" → `Sam Altman`) — a full name is what makes research resolvable. | Lisa + Jake | Invent people |
 | **P0** | Bank the record: `upsert` / `log` / `brief` | **Done.** In-process SQLite `@/lib/memory` (Jake D17). Seed wipes in place. Not `:7777`. | Jake | Schema from other lanes |
-| **P0** | Contact research: Exa timeout + skip; sourced fact on card | **Open.** `researchQuery` / `absorbResearch` exist; `queue.ts` still writes `[exa] …` slices. Lisa stays out. | Jake | Await Exa on Live |
+| **P0** | Contact research: Exa timeout + skip; sourced fact on card | **Done.** `queue.ts` → `researchPerson`; query is built from what they said (`"Ada" Oxen`), results pass a name gate, facts carry `url`. A one-word name with no company banks **nothing** (the first live run returned two unrelated Jakes). Honest skips read "none confidently this person". | Jake | Await Exa on Live |
 | **P0** | Card + ledger show *this* conversation | **Partial.** `/` still operator chrome (seed + live name). Projector `/screen.html` is a bundled room screen — not wired to `/api/memory`. | Luis | Chat composer |
+| **P0** | Detection layer: every turn yields `signals` (name · role · company/project · commitment · ask · contact) | **Done.** On `POST /api/delegate` for both backends; commitments become open threads; signals go into the model prompt. `GET /api/runtime` exposes backend · health · jobs · last 12 traces · the focus person's wiki page for the UI lane. | Jake | Build UI for it |
 | **P0** | Two rehearsals, 2-min video, portal paste | **Open.** Freeze after take 2. | Luis + Lisa | Keep merging |
 
 | Pri | Item | Status | Owner | Rule |
@@ -39,7 +40,7 @@ record. Conversation never waits on the network.
 | **P2** | Face-rec / sightings from `frame_ref` | Parked — memory/face lane reads `web/data/frames/` |
 | **P2** | Auth0 / login | Skip |
 | **P2** | treg, embeddings, vector store | Exa is enough research |
-| **P2** | LLM-Wiki / `BACKEND_LLM=1` | **Opt-in** (Jake). Default off. Not on the tape. |
+| **P2** | LLM-Wiki / `BACKEND_LLM=1` | **On in `web/.env.local`** (Jake) — the model backend banks role/company/commitments the heuristics found. `MEMORY_BACKEND=json` / unset `BACKEND_LLM` rolls back. Wiki pages in `web/data/wiki/who/people/`. |
 
 ## Lisa remaining (Live)
 
@@ -57,8 +58,8 @@ Do not rip it out. Browser `/` still uses default getUserMedia.
 | Who | Now | Stop doing |
 |---|---|---|
 | **Lisa** | Name capture + tape | Exa, Mentra relay, Auth0 |
-| **Jake** | Exa write-back: patch `queue.ts` to `researchQuery` / `absorbResearch` | Face embeddings unless P0 is taped |
-| **Luis** | Live person on the `/` card + source/ts ledger; optional: point projector at live memory | Chatbox |
+| **Jake** | Research is wired (`researchPerson` + gate + `Fact.url`); rehearse the kill-research miss | Face embeddings, and UI — `/api/runtime` is the handoff |
+| **Luis** | Live person on the `/` card + source/ts ledger (`Fact.url` links out now); `GET /api/runtime` gives health · traces · jobs in one call; 4 III findings for `/` in `memory/HANDOFF.md` | Chatbox |
 | **Saint** | Mentra is live; keep it off the P0 tape. Browser `/` is the demo. | Making glasses required |
 
 ## Demo beats (2 min) — P0 only

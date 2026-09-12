@@ -23,7 +23,7 @@ Read this before editing. Status: [`docs/SHIP.md`](./docs/SHIP.md)
 
 | Who | Owns | Do not touch |
 |---|---|---|
-| **Jake** | `memory/**`, `web/src/lib/memory/**`, Exa write-back | Live session, UI |
+| **Jake** | `memory/**`, `web/src/lib/memory/**` (store · detection · research), `web/src/lib/context/**`, `/api/runtime` | Live session, UI |
 | **Lisa** | `web/src/lib/live/**`, `hall/**`, `/api/session`, `/api/delegate` | Memory schema, Exa queue, UI chrome, Mentra relay |
 | **Luis** | `web/src/app/page.tsx`, `layout.tsx`, `globals.css` | Live protocol, SQLite |
 | **Saint** | `client/mentra/**`, `client/browser/**`, `/glasses` | Memory schema. Do not require glasses for P0. |

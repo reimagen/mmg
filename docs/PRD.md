@@ -69,8 +69,8 @@ See [`JUDGING.md`](./JUDGING.md). Short form:
 Roast mode is cut. Second encounter: only if P0 is already on tape.
 
 ## Open
-- Jake: wire `queue.ts` to `absorbResearch` (sourced Exa fact or honest skip on the card).
+- ~~Jake: wire `queue.ts` to `absorbResearch`~~ **done** — real Exa via `researchPerson`, query from detected context, corroboration gate, `Fact.url` provenance.
 - Lisa: first+last name capture; one proof take.
-- Luis: live person + source/ts on `/`; projector `/screen.html` is the room TV (not a substitute for Talk).
+- Luis: live person + source/ts on `/` (facts now carry `url`; `GET /api/runtime` has health · traces · jobs · the agent's wiki page); projector `/screen.html` is the room TV (not a substitute for Talk).
 - Saint: Mentra Live is on hardware (`/glasses`); P0 tape stays on `/`.
 - Hermes connect is P1, not a blocker (`ws` is installed).
