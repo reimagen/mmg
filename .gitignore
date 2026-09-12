@@ -30,3 +30,4 @@ web/AGENTS.md
 web/CLAUDE.md
 web/next-env.d.ts
 web/data/frames/
+web/.certs/
