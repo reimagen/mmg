@@ -266,3 +266,33 @@ the roster as its prompt, the Plaud/Wispr shape) and bank from that transcript i
 one; or accept the correction path that is already in (say "actually it's Sam" and the record renames,
 keeping "Stan" as an alias). The parallel pass is maybe 60 lines server-side plus a hook in
 `browser.ts`; say the word and I will build it.
+
+---
+
+## 14:50 addendum — the roster is real now, and the seed is no longer invented
+
+**The seed data was fake and I wrote it.** "Jake — Building the persistent memory system. Owns
+SQLite schema + recall API." were placeholder strings. `npm run seed` now loads the **actual team
+from `MMG.aDNA/who/team.md`** — Greg (Oxen.ai, lead), Jake (AILedger), Lisa (reimagen.ai), Luis,
+Saint, Seth, Teddy, Eric — with the roles they actually own and their handles as aliases.
+`npm run seed -- --empty` gives a cold ledger if the demo wants "memory fills as you meet people".
+
+**Open-web discovery of an attendee list does not work** — a same-day hackathon has nothing
+indexed, which is why the first roster was 9 randoms. Pre-flight now works the other way round:
+`web/roster-seed.json` holds the names we already know (editable — add anyone you expect to meet),
+each one is researched individually with a disambiguating hint, and the event page is read for
+organisers. A person with no confident match is stored **name-only** rather than guessed at.
+
+Current roster, 9 names, 5 with real context: Jake Joyner (AILedger, tamper-evident audit
+infrastructure), Greg Schoeninger (Oxen.ai), Lisa Gu (reimagen.ai), Saint Louis (Axia), Will Bryk
+(Exa). Removed on Jake's call: Cayden Pierce and Alexander Israelov — not in this room.
+
+Live now: *"Hey, nice to meet you, I am Jake"* →
+*"Jake Joyner — Owns the persistent memory system. Founder — AILedger — builds tamper-evident audit
+infrastructure for AI inference (event roster)."* with jakejoyner.com behind it.
+
+**The roster is in the runtime.** `GET /api/runtime` gained `roster: { count, with_context, people[]
+}` so the homework is visible alongside health, jobs and traces — one call still.
+
+Also: research no longer banks title-only results ("Jake Joyner", "Jake Joyner — CV" carried nothing
+the card didn't already have); a fact must have substance beyond the person's own name.

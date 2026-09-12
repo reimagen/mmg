@@ -18,6 +18,7 @@ import { nameKey, rosterDb } from "./sqlite.ts";
 export type RosterEntry = {
   name: string;
   org?: string;
+  role?: string;
   blurb?: string;
   url?: string;
   /** Which pre-flight query turned this up — provenance for the roster itself. */
@@ -101,7 +102,7 @@ export function rosterFacts(displayName: string, saidText: string, ts = new Date
   const squash = (v: string) => v.toLowerCase().replace(/[^a-z0-9]/g, "");
   const orgSaid = Boolean(entry.org) && squash(saidText).includes(squash(entry.org!));
   if (!full && !orgSaid) return [];
-  const line = [entry.org, entry.blurb].filter(Boolean).join(" — ").slice(0, 180);
+  const line = [entry.role, entry.org, entry.blurb].filter(Boolean).join(" — ").slice(0, 180);
   return line
     ? [{ text: `${line} (event roster)`, source: "exa" as const, ts, url: entry.url }]
     : [];

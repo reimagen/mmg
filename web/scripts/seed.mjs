@@ -1,26 +1,42 @@
-// Wipe + load the demo cast. Run: npm run seed  (from web/)
+// Load the real team into memory. Run: npm run seed   (--empty for a cold start)
+//
+// These are actual people at the table, with the roles they actually own — the source of truth is
+// MMG.aDNA/who/team.md. Nothing here is invented; if you want a cold ledger for the demo (the
+// projector line is "memory fills as the wearer meets people"), run `npm run seed -- --empty`.
 import { join } from "node:path";
 
 const db = process.env.MEMORY_DB_PATH ?? join(process.cwd(), "data", "memory.db");
 const { upsertPerson, listPeople, wipe } = await import("../src/lib/memory/sqlite.ts");
 wipe(); // rows, not the file — a running next dev keeps its handle
-const ts = new Date().toISOString();
-const EVENT = "OpenAI Global Hackathon @ The KINN";
-const fact = (text, source = "enrollment") => ({ text, source, ts });
-const met = { event: EVENT, ts };
 
-// 1 enrolled (face_ref) + 4 spoken-name (face_ref null). Ada is NOT seeded — the exit gate banks her live.
-const cast = [
-  { id: "person_jake", display_name: "Jake", aliases: ["jacob"], face_ref: "enrolled:jake", enrolled: true, first_met: met,
-    facts: [fact("Building the persistent memory system"), fact("Owns SQLite schema + recall API")], open_threads: ["Ask about the schema."] },
-  { id: "person_luis", display_name: "Luis", first_met: met,
-    facts: [fact("Owns whisper card + ledger UI + submission")], open_threads: ["Glasses streaming reliability — fall back early if flaky."] },
-  { id: "person_lisa", display_name: "Lisa", first_met: met,
-    facts: [fact("Owns GPT Live client delegation + Exa enrichment")], open_threads: ["callExa → raw results for the name gate."] },
-  { id: "person_saint", display_name: "Saint", first_met: met,
-    facts: [fact("Owns glasses lane (P2)")], open_threads: ["Glasses ingest is unchanged — POST /api/glasses/ingest."] },
-  { id: "person_maya", display_name: "Maya Chen", first_met: met,
-    facts: [fact("Judge track: agents everywhere; asked about privacy of face data")], open_threads: ["Show her the no-camera-lookup rule on the card."] },
-];
-for (const p of cast) upsertPerson({ enrolled: false, face_ref: null, ...p });
-console.log(`seeded ${listPeople().length} people → ${db}`);
+if (process.argv.includes("--empty")) {
+  console.log(`memory cleared → ${db} (0 people; the roster is untouched)`);
+} else {
+  const ts = new Date().toISOString();
+  const EVENT = "Agents, Everywhere — OpenAI Global Hackathon, The KINN, Venice";
+  const met = { event: EVENT, ts };
+  const team = [
+    ["person_greg", "Greg Schoeninger", ["Greg"], "Oxen.ai", "Team lead; runs the Oxen.ai token pool for the build"],
+    ["person_jake", "Jake Joyner", ["Jake", "jakejjoyner"], "AILedger", "Owns the persistent memory system — schema, API, recall and brief"],
+    ["person_lisa", "Lisa Gu", ["Lisa", "reimagenai"], "reimagen.ai", "Owns the GPT Live session and the Exa enrichment queue"],
+    ["person_luis", "Luis", ["Luimaee"], "reimagen.ai", "Owns the whisper-card UI, the demo and the submission"],
+    ["person_saint", "Saint Louis", ["Saint", "Bootoshi"], "", "Owns the glasses layer — the MentraOS bridge and enrollment"],
+    ["person_seth", "Seth Tam", ["Seth", "sethtam"], "", "Convener; floats between demo data, enrollment and testing"],
+    ["person_teddy", "Teddy Thoren", ["Teddy"], "", "Floater; keeps the backup GPU rig"],
+    ["person_eric", "Eric Lawrence", ["Eric"], "", "Floater; testing"],
+  ];
+  for (const [id, name, aliases, org, role] of team) {
+    upsertPerson({
+      id,
+      display_name: name,
+      aliases,
+      org: org || undefined,
+      enrolled: false,
+      face_ref: null,
+      first_met: met,
+      facts: [{ text: role, source: "enrollment", ts }],
+      open_threads: [],
+    });
+  }
+  console.log(`seeded ${listPeople().length} teammates → ${db}`);
+}

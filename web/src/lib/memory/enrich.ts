@@ -70,6 +70,10 @@ export function absorbResearch(
       ? `${title} — ${sentence}`
       : title
     ).slice(0, 180);
+    // "Jake Joyner" and "Jake Joyner — CV" say nothing the card doesn't already have. A fact has to
+    // carry something beyond the person's own name to be worth a line.
+    const substance = text.toLowerCase().split(name).join("").replace(/[^a-z0-9]/g, "");
+    if (substance.length < 15) continue;
     facts.push({ text, source, ts, url: r.url });
   }
   return facts;

@@ -1,0 +1,51 @@
+{
+  "_comment": "People we expect in the room. Edit freely — `npm run preflight` researches each one with Exa and writes the roster that warms Mac's first card. Source of truth for the team: MMG.aDNA/who/team.md. hint = anything that pins the right person in a search (company, handle, what they build).",
+  "event": {
+    "name": "Agents, Everywhere: Bots, Channels, & More — OpenAI Global Hackathon",
+    "host": "AI Tinkerers LA",
+    "venue": "The KINN, Venice",
+    "date": "2026-09-12",
+    "pages": [
+      "https://la.aitinkerers.org/hackathons/h_6xwsooXcdbo/",
+      "https://la.aitinkerers.org/p/agents-everywhere-bots-channels-more-global-hackathon"
+    ]
+  },
+  "people": [
+    {
+      "name": "Jake Joyner",
+      "hint": "aDNA ailedger jakejjoyner context graphs"
+    },
+    {
+      "name": "Greg Schoeninger",
+      "hint": "Oxen.ai CEO founder"
+    },
+    {
+      "name": "Lisa Gu",
+      "hint": "reimagen.ai reimagenai founder"
+    },
+    {
+      "name": "Saint Louis",
+      "hint": "Bootoshi MentraOS smart glasses agents"
+    },
+    {
+      "name": "Seth Tam",
+      "hint": "sethtam AI Tinkerers Los Angeles"
+    },
+    {
+      "name": "Teddy Thoren",
+      "hint": "GPU infrastructure Los Angeles"
+    },
+    {
+      "name": "Luis",
+      "hint": "Luimaee reimagen"
+    },
+    {
+      "name": "Eric Lawrence",
+      "hint": "AI Tinkerers Los Angeles"
+    },
+    {
+      "name": "Will Bryk",
+      "hint": "Exa AI founder CEO"
+    }
+  ]
+}
