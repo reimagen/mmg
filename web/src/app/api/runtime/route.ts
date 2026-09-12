@@ -6,6 +6,7 @@ import { renderPersonPage, WIKI_DIR } from "@/lib/memory/wiki";
 import { getHealth } from "@/lib/supervisor";
 import { listJobs } from "@/lib/enrichment/queue";
 import { listRoster } from "@/lib/memory/roster";
+import { poolStatus } from "@/lib/context/pool";
 
 /** One call behind the runtime rail: what the backend is, what it just did, and the page it maintains. */
 export async function GET(request: Request) {
@@ -18,6 +19,7 @@ export async function GET(request: Request) {
       model: backendName() === "model" ? process.env.BACKEND_MODEL ?? "gpt-5.4-mini" : null,
       store: "SQLite · node:sqlite · web/data/memory.db",
       wiki_dir: WIKI_DIR,
+      pools: poolStatus(),
     },
     health: getHealth(),
     counts: { people: people.length, enrolled: people.filter((p) => p.enrolled).length },

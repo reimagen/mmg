@@ -18,7 +18,6 @@ const seed = JSON.parse(readFileSync(join(process.cwd(), "roster-seed.json"), "u
 const { saveRoster, listRoster, clearRoster } = await import("../src/lib/memory/roster.ts");
 if (process.argv.includes("--clear")) clearRoster();
 
-const MODEL = process.env.BACKEND_MODEL ?? "gpt-5.4-mini";
 
 async function exaSearch(query) {
   const res = await fetch("https://api.exa.ai/search", {
@@ -40,33 +39,14 @@ async function exaContents(urls) {
   return res.ok ? ((await res.json()).results ?? []) : [];
 }
 
+// Extraction is the bulk-token job in this script, so it goes through the pool: Oxen when it is
+// configured as primary, OpenAI otherwise. See src/lib/context/pool.ts.
+const { askJson } = await import("../src/lib/context/pool.ts");
+const usedPools = new Set();
 async function ask(instructions, input, schema) {
-  const res = await fetch("https://api.openai.com/v1/responses", {
-    method: "POST",
-    headers: { "content-type": "application/json", authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
-    signal: AbortSignal.timeout(90_000),
-    body: JSON.stringify({
-      model: MODEL,
-      reasoning: { effort: "low" },
-      instructions,
-      input,
-      text: { format: { type: "json_schema", name: "out", strict: true, schema } },
-    }),
-  });
-  if (!res.ok) {
-    console.error(`  model ${res.status}: ${(await res.text()).slice(0, 140)}`);
-    return null;
-  }
-  const data = await res.json();
-  const text =
-    data.output_text ??
-    data.output?.find((o) => o.type === "message")?.content?.find((c) => c.text)?.text ??
-    "{}";
-  try {
-    return JSON.parse(text);
-  } catch {
-    return null;
-  }
+  const out = await askJson({ instructions, input, schema });
+  if (out) usedPools.add(out.pool);
+  return out?.value ?? null;
 }
 
 const PERSON_SCHEMA = {
@@ -148,4 +128,4 @@ if (pages.length) {
 }
 
 saveRoster(entries);
-console.log(`\nroster: ${listRoster().length} people · ${entries.filter((e) => e.blurb).length} with real context`);
+console.log(`\nroster: ${listRoster().length} people · ${entries.filter((e) => e.blurb).length} with real context · pool: ${[...usedPools].join(", ") || "none"}`);

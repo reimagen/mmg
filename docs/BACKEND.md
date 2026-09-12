@@ -64,6 +64,27 @@ Obsidian; it is the memory, in aDNA form, maintained by the agent.
 | **Research one person** | `POST /api/enrich {"person_id":"person_ab12"}` — query is composed from their context, no need to write one. |
 | **Rollback** | `MEMORY_BACKEND=json` → the old JSON stub. Unset `BACKEND_LLM` → the regex path. |
 
+## Model pools (Oxen)
+
+Two pools. OpenAI runs the voice session and, by default, the keeper. **Oxen.ai** (Greg's token
+pool, `hub.oxen.ai/api/ai`, OpenAI chat-completions compatible) takes the bulk structured-extraction
+work — roster imports and pre-flight research read thousands of characters per person, and that is
+where a quota actually goes.
+
+```bash
+echo "OXEN_API_KEY=..."  >> web/.env.local     # from ~/.secrets
+npm run pool:check                             # probes every configured pool, prints latency
+```
+
+`MODEL_POOL` picks the primary: `openai` (default), `oxen`, or `auto` (Oxen first, OpenAI on
+failure) — use `auto` when protecting the OpenAI quota for the voice. `OXEN_MODEL` defaults to
+`deepseek-v4-flash`. `GET /api/runtime` reports `backend.pools`, and `health.model_pool` names
+whichever pool last answered.
+
+**On the pool:** `POST /api/roster/import` and `npm run preflight`.
+**Not on the pool:** the live voice session (only OpenAI ships `gpt-live-1`) and the keeper's tool
+loop, which stays on OpenAI Responses — its fallback is the regex path, not another model.
+
 ## Lanes
 
 | You own | What you need from here |

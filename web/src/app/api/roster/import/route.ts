@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { listRoster, saveRoster, type RosterEntry } from "@/lib/memory/roster";
+import { askJson, poolOrder } from "@/lib/context/pool";
 
 /**
  * Ingest a roster from a page only a signed-in human can see — the hackathon's team list, a Luma
@@ -29,67 +30,44 @@ export async function POST(request: Request) {
   if (!body.teams?.length) {
     return NextResponse.json({ error: "teams or people required" }, { status: 400 });
   }
-  if (!process.env.OPENAI_API_KEY) {
-    return NextResponse.json({ error: "OPENAI_API_KEY required to read team blurbs" }, { status: 503 });
+  if (!poolOrder().length) {
+    return NextResponse.json({ error: "set OPENAI_API_KEY or OXEN_API_KEY to read team blurbs" }, { status: 503 });
   }
 
-  const res = await fetch("https://api.openai.com/v1/responses", {
-    method: "POST",
-    headers: { "content-type": "application/json", authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
-    signal: AbortSignal.timeout(90_000),
-    body: JSON.stringify({
-      model: process.env.BACKEND_MODEL ?? "gpt-5.4-mini",
-      reasoning: { effort: "low" },
-      instructions:
-        "These are team blurbs from a hackathon's team list. Pull out every named person. For each: " +
-        "their name exactly as written, their company or school if the blurb gives one, their team " +
-        "name, and one short factual line from the blurb about what they do (<= 140 chars). Only " +
-        "people actually named. Never invent a person, a company, or a detail.",
-      input: body.teams.map((t) => `## ${t.team}\n${t.description}`).join("\n\n"),
-      text: {
-        format: {
-          type: "json_schema",
-          name: "roster_import",
-          strict: true,
-          schema: {
+  const answer = await askJson<{ people: { name: string; org?: string; team?: string; blurb?: string }[] }>({
+    instructions:
+      "These are team blurbs from a hackathon's team list. Pull out every named person. For each: " +
+      "their name exactly as written, their company or school if the blurb gives one, their team " +
+      "name, and one short factual line from the blurb about what they do (<= 140 chars). Only " +
+      "people actually named. Never invent a person, a company, or a detail.",
+    input: body.teams.map((t) => `## ${t.team}\n${t.description}`).join("\n\n"),
+    schemaName: "roster_import",
+    schema: {
+      type: "object",
+      properties: {
+        people: {
+          type: "array",
+          items: {
             type: "object",
             properties: {
-              people: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    name: { type: "string" },
-                    org: { type: "string" },
-                    team: { type: "string" },
-                    blurb: { type: "string" },
-                  },
-                  required: ["name", "org", "team", "blurb"],
-                  additionalProperties: false,
-                },
-              },
+              name: { type: "string" },
+              org: { type: "string" },
+              team: { type: "string" },
+              blurb: { type: "string" },
             },
-            required: ["people"],
+            required: ["name", "org", "team", "blurb"],
             additionalProperties: false,
           },
         },
       },
-    }),
+      required: ["people"],
+      additionalProperties: false,
+    },
   });
-  if (!res.ok) {
-    return NextResponse.json({ error: `model ${res.status}`, detail: (await res.text()).slice(0, 300) }, { status: 502 });
+  if (!answer) {
+    return NextResponse.json({ error: "no model pool answered", pools: poolOrder() }, { status: 502 });
   }
-  const data = (await res.json()) as { output_text?: string; output?: { type: string; content?: { text?: string }[] }[] };
-  const text =
-    data.output_text ??
-    data.output?.find((o) => o.type === "message")?.content?.find((c) => c.text)?.text ??
-    "{}";
-  let people: { name: string; org?: string; team?: string; blurb?: string }[] = [];
-  try {
-    people = JSON.parse(text).people ?? [];
-  } catch {
-    return NextResponse.json({ error: "could not parse extraction" }, { status: 502 });
-  }
+  const people = answer.value.people ?? [];
 
   const entries: RosterEntry[] = people
     .filter((p) => p.name?.trim())
@@ -103,5 +81,10 @@ export async function POST(request: Request) {
       ts,
     }));
   saveRoster(entries);
-  return NextResponse.json({ added: entries.length, roster: listRoster().length, names: entries.map((e) => e.name) });
+  return NextResponse.json({
+    added: entries.length,
+    roster: listRoster().length,
+    pool: answer.pool,
+    names: entries.map((e) => e.name),
+  });
 }
