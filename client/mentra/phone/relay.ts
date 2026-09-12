@@ -88,10 +88,11 @@ export function useRelay() {
       if (inflight || ws.current !== sock) return;
       inflight = (async () => {
         // The glasses ignore start_stream while they think one is still running; clear it first.
-        await BluetoothSdk.stopStream().catch(() => undefined);
+        // The glasses sometimes never answer a stop after their publish died; do not hang the restart on it.
+        await Promise.race([BluetoothSdk.stopStream().catch(() => undefined), new Promise((r) => setTimeout(r, 3000))]);
         try {
-          // 720p at 1.5 Mbit: lighter on the glasses' wifi than the default; the sidecar detects at 640 anyway.
-          const s = await BluetoothSdk.startStream({streamId: `relay-${Date.now()}`, streamUrl, type: 'start_stream', video: {width: 1280, height: 720, bitrate: 1_500_000, fps: 15}});
+          // 360p at 0.7 Mbit: the venue wifi drops the glasses' publish at 1.5 Mbit; the sidecar detects at 640 anyway.
+          const s = await BluetoothSdk.startStream({streamId: `relay-${Date.now()}`, streamUrl, type: 'start_stream', video: {width: 640, height: 360, bitrate: 700_000, fps: 15}});
           log(`camera ${s.status} -> ${streamUrl}`);
         } catch (err) {
           log(`camera failed (try ${attempt}): ${String(err)}`);
