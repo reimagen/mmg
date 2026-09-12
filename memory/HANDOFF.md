@@ -227,3 +227,42 @@ live readings. Memory was up with six people the whole time. To make that board 
 `GET /api/memory/people`. Also note `health.memory` has no writer since the Python sidecar was
 retired: it sits at its default `"ok"` forever, so do not trust it as a liveness signal — a failed
 `/api/memory/people` call is the honest check.
+
+---
+
+## 14:30 addendum — pre-flight event roster, and the employer comes from the model now
+
+**`npm run preflight`** (in `web/`, add `--clear` to rebuild). Run it **before** the demo, never during.
+It searches the event and the sponsor companies with Exa, has the model pull real named people out of
+the results, and stores them in a `roster` table beside the people you have actually met. Current
+roster: 9 — Atai Barkai, Diego Oppenheimer, Greg Schoeninger and Scott Howard (Oxen.ai), Cayden
+Pierce and Alexander Israelov (MentraOS), Will/William Bryk and Jeffrey Wang (Exa).
+
+**A roster entry is not a person you met.** It never appears in `/api/memory/people` and never shows
+on the ledger, so "memory fills as the wearer meets people" still reads true on the projector. It
+does two things:
+
+1. **Fixes name recognition.** The keeper model gets the roster names and orgs as a correction list,
+   so a misheard name snaps to a real attendee instead of banking a lookalike.
+2. **Warms the first card.** The moment someone says their name, their roster line is copied in with
+   its URL. Live: *"Hey I am Greg, my company is Oxen AI"* → card reads
+   *"Greg — Works at Oxen AI. Oxen.ai — CEO of Oxen.ai (event roster)."* with a LinkedIn link, no
+   waiting on a mid-handshake search. That is a demo beat: Mac did its homework.
+
+Same corroboration rule as live research: a full name matches on its own, a bare first name only
+matches if the person also said the employer. "Greg" + "I work at Google" banks nothing.
+
+**Employer extraction moved to the model.** People say "I work at", "my company is", "we're called",
+"I'm building", "over at" — that is not a regex problem. The keeper now returns `org` in its JSON
+answer and it is persisted on `Person.org` (new optional field on the shared contract), which is what
+research searches on. The detector's company pattern is still there as a floor for when the model
+backend is off, and it was broadened, but it is no longer on the critical path.
+
+**On upstream ASR.** Verified against the API: the Live session rejects `session.audio.input`
+outright, so the recognizer cannot be given a vocabulary there — the probe is removed rather than
+left as a dead call on every session. Two routes remain if names still land wrong: run a parallel
+biased transcription pass (a `MediaRecorder` tap on the same mic stream → a transcription model with
+the roster as its prompt, the Plaud/Wispr shape) and bank from that transcript instead of the Live
+one; or accept the correction path that is already in (say "actually it's Sam" and the record renames,
+keeping "Stan" as an alias). The parallel pass is maybe 60 lines server-side plus a hook in
+`browser.ts`; say the word and I will build it.

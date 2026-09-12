@@ -1,5 +1,6 @@
 import { listPeople } from "@/lib/memory";
 import { detect } from "@/lib/memory/detect";
+import { listRoster } from "@/lib/memory/roster";
 
 /**
  * Context bias — the Wispr Flow paradigm. A recognizer with no prior hears "Sam at OpenAI" as
@@ -28,5 +29,11 @@ export async function knownVocabulary(): Promise<string[]> {
   } catch {
     // A recognizer hint is never worth failing a session over.
   }
-  return [...new Set([...names, ...orgs, ...EVENT_TERMS])].filter(Boolean).slice(0, 80);
+  // The pre-flight roster is the point: these are names that will actually be said in this room.
+  const roster = listRoster();
+  return [
+    ...new Set([...roster.map((e) => e.name), ...roster.map((e) => e.org ?? ""), ...names, ...orgs, ...EVENT_TERMS]),
+  ]
+    .filter(Boolean)
+    .slice(0, 120);
 }

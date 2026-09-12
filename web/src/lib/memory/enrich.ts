@@ -28,9 +28,9 @@ export function researchQuery(person: Person): string {
     .slice(0, 2)
     .map((f) => f.text);
   if (!name.includes(" ") && live.length === 0) return "";
-  // A detected employer beats raw transcript keywords: '"Ada" Oxen' finds a person, '"Ada" we ship weekly' doesn't.
+  // The employer the model understood beats anything a regex can scrape; the detector is the floor.
   const signals = detect(live.join(". "));
-  const company = signals.find((s) => s.kind === "company")?.value;
+  const company = person.org?.trim() || signals.find((s) => s.kind === "company")?.value;
   const role = signals.find((s) => s.kind === "role")?.value;
   if (company) return [`"${name}"`, company, role ?? ""].join(" ").trim().slice(0, 200);
   return [`"${name}"`, ...live, person.first_met.event].join(" ").slice(0, 200);

@@ -4,6 +4,7 @@ import { dirname, join } from "node:path";
 import { randomUUID } from "node:crypto";
 import { writeIndex, writePersonPage } from "./wiki.ts";
 import { detect, signalsToMemory } from "./detect.ts";
+import { rosterFacts } from "./roster.ts";
 import type {
   Fact,
   Interaction,
@@ -53,6 +54,11 @@ function db(): DatabaseSync {
   handle.exec(SCHEMA);
   g.__mmgMemoryDb = handle;
   return handle;
+}
+
+/** Same file, same handle — the roster lives beside the people it helps recognise. */
+export function rosterDb(): DatabaseSync {
+  return db();
 }
 
 const nowIso = () => new Date().toISOString();
@@ -161,6 +167,11 @@ export function upsertPerson(input: UpsertPersonInput): Person {
     if (input.face_ref !== undefined) existing.face_ref = input.face_ref;
     if (input.enrolled !== undefined) existing.enrolled = input.enrolled;
     if (input.first_met) existing.first_met = input.first_met;
+    if (input.org) {
+      existing.org = input.org;
+      // The employer often lands a turn after the name; check the homework again now that we have it.
+      existing.facts = mergeFacts(existing.facts, rosterFacts(existing.display_name, input.org));
+    }
     if (input.facts) existing.facts = mergeFacts(existing.facts, input.facts);
     if (input.open_threads) {
       existing.open_threads = [...new Set([...existing.open_threads, ...input.open_threads])];
@@ -170,6 +181,7 @@ export function upsertPerson(input: UpsertPersonInput): Person {
     return existing;
   }
 
+  const heard = [input.org ?? "", ...(input.facts ?? []).map((f) => f.text)].join(" ");
   const person: Person = {
     id: input.id ?? `person_${randomUUID().slice(0, 8)}`,
     display_name: input.display_name,
@@ -177,9 +189,10 @@ export function upsertPerson(input: UpsertPersonInput): Person {
     face_ref: input.face_ref ?? null,
     enrolled: input.enrolled ?? false,
     first_met: input.first_met ?? { event: "hackathon floor", ts },
-    facts: mergeFacts([], input.facts ?? []),
+    facts: mergeFacts(mergeFacts([], input.facts ?? []), rosterFacts(input.display_name, heard)),
     open_threads: input.open_threads ?? [],
     last_seen: ts,
+    org: input.org,
   };
   save(person);
   return person;

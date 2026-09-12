@@ -19,7 +19,9 @@ const NAME = /(?:nice to meet you|my name is|i am|i'm|this is|call me)[,\s]+([A-
 const ROLE =
   /\bI(?:'m| am)?\s+(?:the\s|a\s|an\s)?((?:co-)?(?:founder|ceo|cto|coo|head|lead|engineer|designer|researcher|investor|pm|product manager|professor|student|recruiter|analyst|consultant)[a-z ]{0,20}?)\b/gi;
 const RUNS = /\bI\s+(?:run|lead|head|own|founded|started|manage)\s+([a-z][a-z ]{2,28}?)\b(?=\s+(?:at|for|with)\b|[.,!?]|$)/gi;
-const COMPANY = /\b(?:at|for|with|from|of|joined|work at|works at)\s+((?:[A-Z][\w&'-]*)(?:\s[A-Z][\w&'-]{1,})?)/g;
+/** A floor, not a parser — the keeper model is the real extractor (it hears every phrasing). */
+const COMPANY =
+  /\b(?:(?:I|we)\s+(?:work|am|'m|are|'re)\s+(?:at|for|with|on)|my\s+company\s+is|we(?:'re| are)\s+called|part of|over at|based at|at|for|with|from|of|joined|work at|works at)\s+((?:[A-Z][\w&'-]*)(?:\s[A-Z][\w&'-]{1,})?)/g;
 /** "I'm working on aDNA and ailedger" — the thing someone is building is the best research handle there is. */
 const PROJECT =
   /\b(?:working on|work on|building|shipping|launching|behind)\s+([A-Za-z][\w&'.-]*(?:\s[A-Z][\w&'.-]*)?(?:\s*(?:,|and|&)\s*[A-Za-z][\w&'.-]*(?:\s[A-Z][\w&'.-]*)?){0,2})/g;

@@ -24,7 +24,7 @@ type OutputItem =
   | { type: "message"; content: { type: string; text?: string }[] }
   | { type: string };
 
-type Answer = { card: string; say: string; person_id: string | null };
+type Answer = { card: string; say: string; person_id: string | null; org?: string };
 
 export async function runBackend(req: DelegateRequest): Promise<DelegateResult> {
   const key = process.env.OPENAI_API_KEY;
@@ -74,8 +74,9 @@ async function withModel(req: DelegateRequest, key: string): Promise<DelegateRes
                 card: { type: "string" },
                 say: { type: "string" },
                 person_id: { type: ["string", "null"] },
+                org: { type: "string" },
               },
-              required: ["card", "say", "person_id"],
+              required: ["card", "say", "person_id", "org"],
               additionalProperties: false,
             },
           },
@@ -127,6 +128,10 @@ async function finish(
     });
     trace.push(`fallback upsert_person → ${person.id} (model banked nothing)`);
   }
+  // Persist the employer the model heard, whatever phrasing it arrived in.
+  if (person && answer.org && answer.org !== person.org) {
+    person = await upsertPerson({ id: person.id, display_name: person.display_name, org: answer.org });
+  }
   let card = answer.card.trim().slice(0, 220);
   if (person) {
     if (!card) card = await brief(person.id);
@@ -157,7 +162,7 @@ function outputText(data: { output: OutputItem[]; output_text?: string }) {
 
 function parseAnswer(text: string): Answer {
   const j = safeJson(text) as Partial<Answer>;
-  return { card: String(j.card ?? ""), say: String(j.say ?? ""), person_id: j.person_id ?? null };
+  return { card: String(j.card ?? ""), say: String(j.say ?? ""), person_id: j.person_id ?? null, org: String(j.org ?? "") };
 }
 
 function asPerson(v: unknown): Person | null {

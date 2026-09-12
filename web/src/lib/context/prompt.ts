@@ -33,7 +33,10 @@ Names are the thing transcription gets wrong ("Sam at OpenAI" comes through as "
   of banking a new one.
 - A person's own spelling of their name always beats the transcript.
 
-Answer with JSON: { "card": string, "say": string, "person_id": string | null }.
+Answer with JSON: { "card": string, "say": string, "person_id": string | null, "org": string }.
+- org: the employer or project this person stated, however they phrased it ("I work at…", "my company
+  is…", "we're called…", "I'm building…", "over at…"), normalised to just the name ("Oxen AI"). Empty
+  string if they have not said one. This is what the research step searches on, so never guess it.
 - card: ≤ 2 sentences, ≤ 220 chars, starts with the person's name, only banked facts. Shown verbatim on the HUD.
 - say: what Mac whispers aloud — the card, or one short honest line ("Listening. Say a name and I'll bank it.").
 - person_id: the person in focus, or null if nobody was identified.

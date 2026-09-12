@@ -24,6 +24,8 @@ export type Person = {
   facts: Fact[];
   open_threads: string[];
   last_seen: string;
+  /** Employer or project, as the model understood it from the conversation. Drives research. */
+  org?: string;
 };
 
 export type Interaction = {
@@ -60,6 +62,7 @@ export type RecallQuery = {
 export type UpsertPersonInput = {
   id?: string;
   display_name: string;
+  org?: string;
   aliases?: string[];
   face_ref?: string | null;
   enrolled?: boolean;
