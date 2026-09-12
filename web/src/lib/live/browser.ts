@@ -43,7 +43,7 @@ type LiveClientOptions = {
   /** Client seam: receives Mac's voice track in addition to local playback, e.g. to forward to glasses. */
   onOutputTrack?: (track: MediaStreamTrack) => void;
   /** Client seam: latest frame of the client's live video source as a JPEG data URL; sent with every delegation. */
-  snapshot?: () => string | undefined;
+  snapshot?: () => string | undefined | Promise<string | undefined>;
 };
 
 /**
@@ -339,7 +339,7 @@ export class GptLiveClient {
           delegation_id: delegationId,
           transcripts: this.transcripts.slice(-12),
           last_person_id: this.lastPersonId,
-          frame: this.options.snapshot?.(),
+          frame: await this.options.snapshot?.(),
         }),
       }).then((r) => r.json() as Promise<DelegateResult>);
 
