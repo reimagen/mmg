@@ -68,8 +68,10 @@ export function lookupRoster(name: string): RosterEntry | null {
   const all = listRoster();
   const exact = all.find((e) => nameKey(e.name) === key);
   if (exact) return exact;
-  const first = all.find((e) => nameKey(e.name).split(" ")[0] === key);
-  if (first) return first;
+  // A first name is enough only if exactly one person at this event has it. Two Chrises: neither.
+  const firsts = all.filter((e) => nameKey(e.name).split(" ")[0] === key);
+  if (firsts.length === 1) return firsts[0];
+  if (firsts.length > 1) return null;
   const near = all.filter((e) => close(nameKey(e.name).split(" ")[0], key));
   return near.length === 1 ? near[0] : null;
 }
@@ -97,12 +99,15 @@ function close(a: string, b: string) {
 export function rosterFacts(displayName: string, saidText: string, ts = new Date().toISOString()) {
   const entry = lookupRoster(displayName);
   if (!entry) return [];
-  const full = nameKey(entry.name) === nameKey(displayName);
+  // The roster is scoped to people who are actually at this event, and lookupRoster already
+  // refuses an ambiguous first name. So a match here is either the full name, the only person
+  // here with that first name, or corroborated by the employer they just said.
   // "Oxen.ai" on a profile page and "Oxen AI" out of a transcript are the same company.
   const squash = (v: string) => v.toLowerCase().replace(/[^a-z0-9]/g, "");
   const orgSaid = Boolean(entry.org) && squash(saidText).includes(squash(entry.org!));
-  if (!full && !orgSaid) return [];
-  const line = [entry.role, entry.org, entry.blurb].filter(Boolean).join(" — ").slice(0, 180);
+  if (!entry.blurb && !orgSaid) return [];
+  const head = [entry.org, entry.role].filter(Boolean).join(", ");
+  const line = [head, entry.blurb].filter(Boolean).join(" — ").slice(0, 180);
   return line
     ? [{ text: `${line} (event roster)`, source: "exa" as const, ts, url: entry.url }]
     : [];

@@ -296,3 +296,34 @@ infrastructure for AI inference (event roster)."* with jakejoyner.com behind it.
 
 Also: research no longer banks title-only results ("Jake Joyner", "Jake Joyner — CV" carried nothing
 the card didn't already have); a fact must have substance beyond the person's own name.
+
+---
+
+## 15:05 addendum — the real roster, from the event's own team list
+
+**`POST /api/roster/import`** takes what only a signed-in human can see. The hackathon's team page
+(`la.aitinkerers.org/hackathons/h_6xwsooXcdbo/teams`) is behind a login, so no crawler and no Exa
+search will ever reach it — but it lists all 16 teams with blurbs naming their founders. Scraped it
+from the browser, posted the blurbs, and the model pulled the people out.
+
+Body is either `{ source, teams: [{ team, description }] }` (blurbs, model extracts the names) or
+`{ source, people: [{ name, org, blurb }] }` (already structured). Re-run it for the People tab, a
+Luma guest list, or anything else you can see and a crawler cannot.
+
+**Roster is now 20 people, 16 with real context** — Callahan Stroud (Prairie Labs), the Escobedo
+brothers (Locked In), David Parkhurst and Kyle Akin (Aitherium), Relimnas Stomo (bezeeai), Gaurrav
+Bhat (G-Unit), Tylan Miller (Otaku Solutions), Orlando Fernandez (PlayQuest), Prashant Pisipati
+(Renderwolf), Christian Deciga (Meerkatt), plus our own team and the sponsor founders.
+
+**The beat this unlocks.** Walk up to a stranger from another team, they say their first name only,
+and the card already knows them:
+
+> *"nice to meet you, Prashant"* → **"Prashant — team Renderwolf — CEO of RenderWolf AI with deep
+> expertise in generative AI and gaming."**
+
+No search mid-handshake, because the homework was done. A first name is accepted **only when exactly
+one person at this event has it** — two Chrises and neither matches, which falls back to the
+employer-corroboration rule. That guard is in `lookupRoster`.
+
+`GET /api/runtime` carries `roster { count, with_context, people[] }` if the UI wants to show what
+Mac already knows before the room starts.
