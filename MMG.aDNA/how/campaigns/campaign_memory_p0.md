@@ -8,61 +8,68 @@ owner: jake
 tags: [campaign, memory, p0, hackathon]
 ---
 
-# Campaign — Memory P0: bank the record, hand it over
+# Campaign — Memory P0: SQLite behind Lisa's seam, hand it over
 
-**Goal.** By freeze, `memory/` on `:7777` speaks the shared contract in `web/src/lib/types.ts`
-exactly, so Lisa's delegate route banks a spoken name, Luis's ledger lists it, and Saint's
-glasses ingest can reuse the same name path. Deliverable = a running API + a drop-in HTTP
-client + a one-page HANDOFF with curl proofs. Functionality first; no auth, local-only bind.
+**Rescoped 12:55 after reading Lisa's runtime.** Her architecture: memory is a **module**
+(`@/lib/memory`, five **synchronous** functions — `recall`, `upsertPerson`,
+`logInteraction`, `brief`, `listPeople`) consumed by 7 call sites (delegation, glasses
+ingest, enrichment write-back, 5 `/api/memory/*` routes). Those routes *are* the HTTP
+memory API for Saint/Hermes. `store.ts` is a JSON stub whose header says "Jake's lane —
+swap for SQLite"; `next.config.ts` already whitelists `better-sqlite3`. An HTTP client to
+a Python `:7777` would force `async` through all 7 sites — the opposite of plug-and-play.
 
-**Contract source of truth:** `web/src/lib/types.ts` (Person/Fact/Interaction, ISO timestamps,
-`FactSource = live|enrollment|exa|treg|manual`, `enrolled` flag). Lisa's dispatcher
-`web/src/lib/live/tools.ts` sends `upsert_person {display_name, aliases[], face_ref, enrolled,
-facts[{text,source,ts}], open_threads[]}` and `log_interaction {person_id, transcript_ref,
-extracted_facts[], follow_ups[]}`; expects `recall → Person | miss`, `brief → {brief}`,
-and the ledger needs `listPeople()`.
+**Decision (proposed, D17):** the memory system is **SQLite in-process behind Lisa's seam**,
+via Node's built-in `node:sqlite` (verified on Node 26.7: sync `DatabaseSync`, WAL, zero
+deps). Same five signatures → zero consumer changes. The Python `memory/` API is retired to
+`memory/legacy/` (schema + seed ported); docs' ":7777" lines become "`/api/memory/*`".
+One runtime, one contract (`types.ts`), one env var to roll back.
 
-## Phase 0 — precursor (Oxen.ai + mirror rule) — done except the key
+**Best practices folded in (sidecar memory for a realtime agent):** contract-first
+(`types.ts` is the API), idempotent upsert keyed by `id` → `face_ref` → normalized name,
+ISO-8601 UTC timestamps, provenance on every fact (`source`, `ts`), append-only
+interaction log, small tool outputs (card ≤ 2 sentences, facts capped at 5), never-throw
+reads (miss → `null`), single-writer SQLite in WAL with `busy_timeout`, absolute DB path
+(Next's cwd is `web/`), one env switch for backend, health visible in `LoopHealth.memory`.
+
+## Phase 0 — precursor (done except the key)
 
 | # | Item | Status |
 |---|---|---|
-| 0.1 | Oxen base URL corrected everywhere (`hub.oxen.ai/api/ai`); env/client/smoke in `how/tools/oxen/`; `oxen.sh` sourced from `.zshrc` | ✅ |
-| 0.2 | **Jake: paste key** → `~/.secrets/oxen-api-key` (600) → `bash how/tools/oxen/smoke.sh deepseek-v4-flash` | ⏳ blocked on key |
-| 0.3 | Two-way mirror rule in `CLAUDE.md` + `how/tools/mirror.sh` | ✅ |
+| 0.1 | Oxen base URL fixed; env/client/smoke in `how/tools/oxen/`; sourced from `.zshrc` | ✅ |
+| 0.2 | **Jake: paste key** → `~/.secrets/oxen-api-key` (600) → `bash how/tools/oxen/smoke.sh deepseek-v4-flash` | ⏳ key |
+| 0.3 | Two-way mirror rule (`CLAUDE.md` §6) + `how/tools/mirror.sh` | ✅ |
+| 0.4 | `node:sqlite` spike on Node 26.7 — WAL + insert + read OK, no deps | ✅ |
 
-Oxen is the *third* pool (D16): nothing in P0 depends on it. Precursor only so the fallback
-story is real if quota dies.
-
-## Phase 1 — P0 (critical path, in order)
+## Phase 1 — P0 (≈2 h, in order)
 
 | M | Mission | Deliverable | Check |
 |---|---|---|---|
-| **M1** | **API speaks `types.ts`** — `/upsert_person` accepts Lisa's payload (aliases, enrolled, facts[], open_threads[]); `/recall` and new `GET /people` return `Person` (ISO ts, `enrolled = face_ref is not null`, `first_met{event,ts}`, `last_seen`); `/log_interaction` returns `Interaction`; fact `source` uses the enum (`live` for transcript facts); WAL + `timeout=5` on connect | `memory/api.py`, `schema.sql` (add `aliases`, keep JSON cols) | `python memory/api.py` self-check + `curl` round-trip |
-| **M2** | **Drop-in HTTP client** — `web/src/lib/memory/http.ts` exporting the same five functions as `store.ts` (recall, upsertPerson, logInteraction, brief, listPeople) over `MEMORY_API_URL` (default `http://127.0.0.1:7777`), 1.5 s timeout, returns `null`/`[]` on failure so the live loop never throws | one file; Lisa flips the re-export in `memory/index.ts` | `npm run dev` + delegate → person appears in `/people` |
-| **M3** | **Demo cast + reset** — `seed.py` loads 3–5 spoken-name people (face_ref null except one enrolled) with `source: enrollment` facts + one open thread each; `python -m memory.seed` < 10 s | `memory/seed.py` | reseed, `curl /people` shows cast |
-| **M4** | **HANDOFF.md** — per-teammate page: Lisa (import flip + env var + payload examples), Luis (`/people` ledger shape, `brief` length rule), Saint (`POST /upsert_person` by spoken name from glasses ingest) with copy-paste curls | `memory/HANDOFF.md` | each curl runs green on a fresh seed |
+| **M1** | **`sqlite.ts`** — same five exports as `store.ts`, backed by `node:sqlite` at `web/data/memory.db` (WAL, `busy_timeout=5000`, `user_version=1`). Tables `person(id, json)` + `interaction(id, person_id, ts, json)` — JSON columns, `Person`/`Interaction` stored whole; index on `person_id`. Upsert merge = Lisa's semantics (dedupe facts by lowercased text, union open_threads, `last_seen`). `brief` = her template, capped 2 sentences | `web/src/lib/memory/sqlite.ts` (~120 lines) | `node --experimental-strip-types` self-check: upsert → recall by name → log → brief → listPeople; reopen file → data persists |
+| **M2** | **Shim** — `index.ts` picks backend: `MEMORY_BACKEND=json` → `store.ts`, else `sqlite.ts`. Rollback = one env var, no code | `web/src/lib/memory/index.ts` (5 lines) | `npm run dev`, `curl /api/memory/people` → `{people:[…]}`; flip env → JSON stub again |
+| **M3** | **Seed + reset** — `web/scripts/seed.ts`: 4 spoken-name people (`enrolled:false`, `face_ref:null`) + 1 enrolled, `source:"enrollment"` facts, one open thread each; `npm run seed` wipes + loads < 10 s | `web/scripts/seed.ts`, `package.json` script | reseed, ledger shows cast |
+| **M4** | **HANDOFF.md + doc sync** — `memory/HANDOFF.md`: Lisa (nothing to change; env var; where the DB lives), Luis (`/api/memory/people` ledger shape, `brief` rule), Saint (`POST /api/glasses/ingest` unchanged, `POST /api/memory/upsert` by spoken name) with curls. One commit updates README / ARCHITECTURE / SHIP / SCORING ":7777" → "`/api/memory/*`, SQLite"; Python moved to `memory/legacy/`. **Announce in Discord before merging (CLAUDE.md §2)** | `memory/HANDOFF.md` + doc diff | every curl green on a fresh seed |
 
-**Phase 1 exit gate:** from a fresh seed, one curl sequence banks a new person by spoken name
-with a fact and a follow-up, and `GET /people` shows them with ISO timestamps and sources.
-Then the web app, with the import flipped, shows the same person on the ledger.
+**Phase 1 exit gate:** fresh seed → `POST /api/delegate` with a "nice to meet you, Ada"
+transcript banks Ada with a fact → `GET /api/memory/people` shows her with ISO `ts`,
+`source:"live"` → restart `next dev` → she is still there.
 
 ## Phase 2 — P1 (only after the gate)
 
 | M | Mission | Why |
 |---|---|---|
-| M5 | Failure beats: API returns `miss` not 500 on unknown ids; client degrades to `null` when `:7777` is down (loop continues, `LoopHealth.memory = "down"`) | SCORING C3 level 4 |
-| M6 | `POST /note` (or `upsert` with `source: exa`) for enrichment write-back; staleness ts on card | slow-plane write-back, HERMES.md step 5 |
-| M7 | Rehearsal ×2: fill `docs/SCORING.md` rehearsal log; 5-line AAR in the mission file | freeze rule |
+| M5 | Failure beat: `sqlite.ts` reads catch → `null`/`[]`, writes log + rethrow; `patchHealth({memory:"down"})` on catch in delegate route (Lisa's file — offer as 3-line patch) | SCORING C3 level 4 |
+| M6 | Enrichment write-back already lands via `upsertPerson({facts:[{source:"exa"}]})` — verify a stale-vs-fresh `ts` shows on the card | slow plane proof |
+| M7 | Rehearsal ×2 → `docs/SCORING.md` log; 5-line AAR below | freeze rule |
 
-## Out of scope (D13/D15, don't reopen)
+## Out of scope (D13/D15/D17)
 
-Face embeddings / sighting pipeline · auth · vector store · re-encounter demo beat · hall
-stand-up. `recall(face_ref)` stays as-is (works, P2).
+Python FastAPI as a live service · HTTP client shim · auth · face embeddings · vector store ·
+re-encounter beat · hall stand-up · `better-sqlite3` (only if `node:sqlite` misbehaves
+under `next dev` — 2-minute fallback, already whitelisted).
 
 ## Standing rule — two-way mirror
 
-Every touch of MMG.aDNA runs `how/tools/mirror.sh` (pull repo → read doc delta → fold into
-CG → push CG → subtree-pull into repo → push). See `CLAUDE.md` §6.
+Every touch of MMG.aDNA: `how/tools/mirror.sh pull` first, `push` last (`CLAUDE.md` §6).
 
 ## AAR (fill at freeze)
 
