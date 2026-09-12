@@ -15,6 +15,8 @@ Hear a name → **bank** person + facts → first card is warmed from Jake’s
 and **come back**, Mac still has them. Conversation never waits on the network.
 Live Exa is backup, not the tape source.
 
+Backend reference — what exists, how to switch it on, every endpoint: [`BACKEND.md`](./BACKEND.md).
+
 ## Rank + status
 
 | Pri | Item | Status | Owner | Do not |
