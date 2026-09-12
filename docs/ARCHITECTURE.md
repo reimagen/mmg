@@ -48,7 +48,7 @@ cached result → skip gracefully. Demo never awaits the network on stage.
 | GPT Live quota | OpenRouter text loop + TTS |
 | Enrichment crash | Conversation continues; card stays on last recall |
 
-Token pools: **OpenAI → OpenRouter → Oxen.ai** (`https://hub.oxen.ai/api`).
+Token pools: **OpenAI → OpenRouter → Oxen.ai** (`https://hub.oxen.ai/api/ai`).
 
 ## Privacy
 

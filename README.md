@@ -50,7 +50,7 @@ Degraded modes (rehearse): glasses die → phone mic · face miss → “nice to
 |---|---|---|
 | `OPENAI_API_KEY` | GPT Live | OpenAI secret |
 | `OPENROUTER_API_KEY` | fallback pool | OpenRouter secret |
-| `OXEN_API_KEY` | third pool | `https://hub.oxen.ai/api` |
+| `OXEN_API_KEY` | third pool | `https://hub.oxen.ai/api/ai` |
 | `EXA_API_KEY` | search | `exa_…` from [dashboard.exa.ai/api-keys](https://dashboard.exa.ai/api-keys) |
 | `TREG_TOKEN` | people/company enrich | [treg.to](https://treg.to/llms.txt) |
 
