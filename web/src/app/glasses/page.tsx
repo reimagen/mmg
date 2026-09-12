@@ -111,7 +111,8 @@ export default function Glasses() {
       // Demo: GPT Live's voice plays on the laptop. The glasses path is utterance-chunked WAV (0.5-1 s late).
       onOutputTrack: voiceToGlasses ? (track) => forwardVoiceToGlasses(track, relayUrl) : undefined,
       snapshot: () => camera.current?.snapshot(),
-      onStatus: status(setLiveStatus),
+      // "Heard: …" is the transcript's job (THEM lines); the header shows only session state.
+      onStatus: (t) => { if (!t.startsWith("Heard:")) status(setLiveStatus)(t); },
       onCard: (r: DelegateResult) => {
         setBrief(r.card);
         if (r.person) {
