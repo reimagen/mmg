@@ -12,7 +12,7 @@ Last updated: 2026-09-12 13:59 PDT (target flipped to 5; Jake Exa/detect coded, 
 |---|---:|---:|---|---|
 | 1. Core Requirements & Functionality | 3 | 5 | Lisa + Luis | First+last enroll + fact on ledger, then **two** crash-free Talks with no typing |
 | 2. Innovation & Theme Alignment | 3 | 5 | Lisa (talk) + Luis (no chatbox) | Script the handshake line; kill “Recall Jake”; bank a stranger while talking |
-| 3. Technical Execution & Integration | 3 | 5 | Lisa + Jake + Luis | Show the three loops **and** a kill/skip **on screen**; sourced Exa or honest skip |
+| 3. Technical Execution & Integration | 3 | 5 | Lisa + Jake + Luis | Three loops **and** a kill/skip on screen; **pre-flight roster** line or honest skip |
 | 4. Usefulness & Agentic Experience | 2 | 5 | Luis + Lisa | Live card + source/ts/url ledger, then a **20s re-encounter** that uses memory |
 | **Sum (max 20)** | **11** | **20** | | |
 
@@ -143,7 +143,7 @@ Agent actions on tape: `upsert` · `log` · `brief` · enrich-later · `recall` 
 0:00 `/` **Talk** — *“Chatbox is too late.”* — **C2, C1 environment**  
 0:15 “Nice to meet you, FIRST LAST. I run X at Y.” — **C1 enroll**  
 0:35 Card banks full name; Mac reads it verbatim — **C4 card**  
-0:50 Fact + sourced Exa (or skip) on card/ledger — **C3 slow plane, C4=4**  
+0:50 Roster-warmed card (“event roster”) or skip — **C3 slow plane, C4=4**  
 1:10 Kill research *or* “no glasses, same Mac” — **C3 failure**  
 1:25 Leave / come back / say the name — remembered card — **C4=5**  
 1:45 Ledger: person, live vs exa, timestamps — freeze  
@@ -158,7 +158,7 @@ If projector flakes: stay on `/`. If glasses flake: stay on `/`. Do not spend th
 | Who | Do now | Do not |
 |---|---|---|
 | **Lisa** | First+last enroll via `detect` name signal; two proof Talks; talk track on tape | Exa, Hermes, OpenRouter, roast |
-| **Jake** | Confirm one sourced Exa *or* honest skip against a **full** name in a live Talk | Face embeddings, wiki as the demo |
+| **Jake** | Roster shipped — add names to `roster-seed.json`, `npm run preflight` before tape | Face embeddings, wiki as the demo, mid-handshake Exa |
 | **Luis** | Live card + source/ts/url; health/jobs strip; hide Recall Jake | Chat composer, making `/screen.html` required |
 | **Saint** | Off the tape unless a 5s “same agent, glasses optional” cut | Making glasses the environment |
 

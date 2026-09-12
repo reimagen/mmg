@@ -15,7 +15,7 @@ guaranteed, Mentra glasses optional), **banks** who you just met, and
 | Ship (P0) | Stretch (P2) |
 |---|---|
 | Spoken-name enroll (first+last) + fact log + ledger | Face-rec, sightings, glasses HUD |
-| Killable Exa contact research (Jake) | Auth0, treg, embeddings, Hermes-from-scratch |
+| Killable research (Jake): **pre-flight roster** warms the first card; live Exa backup | Auth0, treg, embeddings, Hermes-from-scratch |
 | Client delegation + in-process SQLite | `BACKEND_LLM` wiki |
 | 20s spoken-name re-encounter (C4=5) | Roast (cut) |
 
@@ -70,7 +70,7 @@ See [`JUDGING.md`](./JUDGING.md). Short form:
 Roast mode is cut. Re-encounter is on the tape (C4=5).
 
 ## Open
-- Jake: **research loop coded** — confirm sourced Exa or honest skip on a **full** name in a live Talk.
+- Jake: **roster is up** — `npm run preflight`, edit `web/roster-seed.json`. Roster ≠ people you met. Live Exa is backup.
 - Lisa: first+last enroll via `detect` into `display_name`; two proof takes.
 - Luis: live person + source/ts/url on `/`; hide Recall Jake; health/jobs from `GET /api/runtime`. Projector is the room TV.
 - Saint: Mentra Live is on hardware (`/glasses`); P0 tape stays on `/`.

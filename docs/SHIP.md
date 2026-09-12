@@ -1,4 +1,4 @@
-# 4-hour ship — status 2026-09-12 14:02 PDT
+# 4-hour ship — status 2026-09-12 14:26 PDT
 
 **Team board.** Pull this before you code. Scoring 5-bars: [`SCORING.md`](./SCORING.md).
 2-minute script: [`JUDGING.md`](./JUDGING.md).
@@ -10,9 +10,10 @@
 
 ## What ships
 
-Hear a name → **bank** person + facts → **research** in the background → whisper card
-is the record → walk off and **come back**, Mac still has them. Conversation never
-waits on the network.
+Hear a name → **bank** person + facts → first card is warmed from Jake’s
+**pre-flight roster** (`npm run preflight`, `web/roster-seed.json`) → walk off
+and **come back**, Mac still has them. Conversation never waits on the network.
+Live Exa is backup, not the tape source.
 
 ## Rank + status
 
@@ -21,7 +22,7 @@ waits on the network.
 | **P0** | Browser mic → **Talk** → Mac hears/speaks | **Done.** ICE hang fixed; Hang up cuts billing. Voice: `marin`. Gen Z prompt shipped. | Lisa | Typed chat |
 | **P0** | Spoken name → card banks **first + last** | **Split.** Jake `detect` captures `Sam Altman`. Lisa’s Live INTRO still enrolls one token into `display_name`. Wire enroll to the name signal. | Lisa | Invent people |
 | **P0** | Bank the record: `upsert` / `log` / `brief` | **Done.** In-process SQLite `@/lib/memory`. | Jake | Schema from other lanes |
-| **P0** | Contact research: sourced Exa **or** honest skip | **Coded.** `queue.ts` → `researchPerson`; query from what they said; name gate; `Fact.url`. Confirm in a Talk on a **full** name. One-word name with no company banks nothing. | Jake | Await Exa on Live |
+| **P0** | Contact research: **event roster** (pre-flight) **or** honest skip | **Done (Jake).** `npm run preflight` → SQLite `roster` table. Entries are **not** people you met (not on `/api/memory/people`). On enroll, roster line copies onto the card with URL. Edit `web/roster-seed.json`. Live Exa is backup. | Jake | Mid-handshake search; treating roster as the ledger |
 | **P0** | Detection `signals` on every delegate | **Done.** name · role · company · commitment · ask · contact. `GET /api/runtime` for the UI lane. | Jake | Building UI for it |
 | **P0** | Card + ledger show *this* conversation (`source` + `ts` + `url`) | **Partial.** `/` is operator chrome. Hide **Recall Jake**. Health/jobs strip for the kill beat. | Luis | Chat composer |
 | **P0** | Kill/skip visible on `/` while Mac keeps talking | Kill API exists; **no on-screen proof** (Jake III). | Luis + Jake | Four failure demos |
@@ -47,7 +48,7 @@ waits on the network.
 | Who | Do now | Stop doing |
 |---|---|---|
 | **Lisa** | Stay off name/enroll (`detect`, INTRO) — Jake has it. Push board. Tape + Talk proof with Luis (seeded person OK). `last_person_id` already on the client. | Exa, Hermes, OpenRouter, roast, Mentra, memory |
-| **Jake** | Confirm one sourced Exa **or** honest skip against a **full** name in a live Talk. Rehearse the kill-research miss. `/api/runtime` is the UI handoff. | Face embeddings, wiki as the demo |
+| **Jake** | Roster is up (`roster.ts` + `npm run preflight`). Add expected names to `web/roster-seed.json`; run preflight **before** the demo. Stay on name/enroll. | Face embeddings, wiki as the demo, mid-handshake Exa |
 | **Luis** | Live person on `/`; ledger `source`+`ts`+`url`; health/jobs/traces from `GET /api/runtime`; hide Recall Jake. III notes in `memory/HANDOFF.md`. | Chat composer, making `/screen.html` required |
 | **Saint** | Off the tape unless a 5s “same agent, glasses optional” cut. | Making glasses the environment |
 
@@ -60,7 +61,7 @@ Canonical copy: [`SCORING.md`](./SCORING.md) (bars) · [`JUDGING.md`](./JUDGING.
 0:00 `/` **Talk** — *“A chatbox is too late.”*  
 0:15 “Nice to meet you, FIRST LAST. I run X at Y.”  
 0:35 Card banks full name; Mac reads it verbatim  
-0:50 Fact + sourced Exa (or skip)  
+0:50 Roster-warmed line on the card (“event roster”) or honest skip  
 1:10 Kill research *or* no glasses, same Mac  
 1:25 Leave / come back / say the name — remembered card  
 1:45 Ledger close — freeze  
@@ -73,9 +74,8 @@ If glasses or `/screen.html` flake: stay on `/`.
 **Client delegation + local memory (fast) + killable research queue (slow).**
 
 Memory is SQLite in-process behind `@/lib/memory`. FastAPI `:7777` is retired.
-The slow plane on tape is **local Exa**. Hermes/hall is a **ripcord**: leave
-`HERMES_ENABLED=0`. Pull it (do not connect hall) if time is short. C3=5 is
-killable Exa, not Hermes live.
+The slow plane on tape is Jake’s **pre-flight roster** (homework before the room).
+Live Exa is backup. Hermes/hall is a **ripcord**: leave `HERMES_ENABLED=0`.
 
 Measured (LIVE-0002): delegation ~0.9 s; local Exa is the 1–3 s fast lane;
 a Hermes room turn is ~17 s. [`LIVE_LOOP.md`](./LIVE_LOOP.md). Glasses: [`client/mentra/README.md`](../client/mentra/README.md).
@@ -91,5 +91,6 @@ a Hermes room turn is ~17 s. [`LIVE_LOOP.md`](./LIVE_LOOP.md). Glasses: [`client
 - P0 demo is **browser mic**, even if glasses work
 - Secrets in `web/.env.local` only
 - OpenRouter **dropped** as a Live pool: `GET /api/v1/models/openai/gpt-live-1` → 404 (2026-09-12). GPT Live is OpenAI `v1/live/sessions` only. Oxen is the same (no `gpt-live-1`).
-- Hermes is a **time ripcord**: `HERMES_ENABLED=0`, local Exa on tape. Pull it (skip hall) when the clock is tight. Do not stand up hall from scratch.
+- Hermes is a **time ripcord**: `HERMES_ENABLED=0`. Pull it (skip hall) when the clock is tight.
+- **Contact enrich = pre-flight event roster** (`web/src/lib/memory/roster.ts`, `npm run preflight`). Not a CSV. Roster ≠ ledger. Live Exa is backup. Spoken-name lookup of attendees; still no stranger camera lookup.
 - Re-encounter on tape is spoken-name recall, not face-rec

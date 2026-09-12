@@ -23,7 +23,7 @@ Scoring target is **5 on all four** ([`docs/SCORING.md`](./docs/SCORING.md)).
 
 | Who | Owns | Do not touch |
 |---|---|---|
-| **Jake** | `memory/**`, `web/src/lib/memory/**` (store · detection · research), `web/src/lib/context/**`, `/api/runtime` | Live session, UI |
+| **Jake** | `memory/**`, `web/src/lib/memory/**` (store · detection · research · **roster**), `web/src/lib/context/**`, `/api/runtime`, `npm run preflight` | Live session, UI |
 | **Lisa** | `web/src/lib/live/**`, `hall/**`, `/api/session`, `/api/delegate` | Memory schema, Exa queue, UI chrome, Mentra relay |
 | **Luis** | `web/src/app/page.tsx`, `layout.tsx`, `globals.css` | Live protocol, SQLite |
 | **Saint** | `client/mentra/**`, `client/browser/**`, `/glasses` | Memory schema. Do not require glasses for P0. |

@@ -13,7 +13,7 @@ Target is **5 on all four** ([`SCORING.md`](./SCORING.md)).
 |---|---|
 | **Talk** (browser mic) | Agent runs **in the conversation**, not a chat form. |
 | Whisper card banks a name | Spoken intro → `upsert` / `brief` → card + speech. |
-| A fact + a research line | `log_interaction` and Exa show on card/ledger **with the source**, or an honest skip ("none confidently this person"). |
+| A fact + a research line | Pre-flight **roster** line on the card (`(event roster)` + URL), or an honest skip. Roster is not the ledger. |
 | No glasses | Do not stall. Input stays `browser`. |
 
 Script line: *“This is Mac, in the room. The panel is the room, not a backup app.”*
