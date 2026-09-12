@@ -108,10 +108,16 @@ async function resolvePerson(userText: string, req: DelegateRequest): Promise<Pe
   return name ? recall({ name }) : null;
 }
 
+/** The wearer introducing himself ("I'm Saint") is not a new person; the meet workflow waits for the other name. */
+const WEARER = new Set((process.env.WEARER_ALIASES ?? "saint,louis,bootoshi").split(",").map((s) => s.trim().toLowerCase()));
+const INTRO_ALL = new RegExp(INTRO.source, "gi");
+
 function spokenName(text: string) {
-  const match = text.match(INTRO)?.[1];
-  if (!match || STOP.has(match.toLowerCase())) return null;
-  return match;
+  for (const m of text.matchAll(INTRO_ALL)) {
+    const name = m[1].toLowerCase();
+    if (!STOP.has(name) && !WEARER.has(name)) return m[1];
+  }
+  return null;
 }
 
 function recentUserText(transcripts: TranscriptTurn[]) {
@@ -129,8 +135,8 @@ function extractFacts(text: string, name: string) {
 }
 
 function guessName(text: string) {
-  const match = text.match(/\b([A-Z][a-z]{2,})\b/);
-  return match?.[1];
+  for (const m of text.matchAll(/\b([A-Z][a-z]{2,})\b/g)) if (!WEARER.has(m[1].toLowerCase()) && !STOP.has(m[1].toLowerCase())) return m[1];
+  return undefined;
 }
 
 function capitalize(name: string) {

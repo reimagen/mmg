@@ -105,7 +105,11 @@ export function forwardVoiceToGlasses(track: MediaStreamTrack, relayWsUrl: strin
     if (samples >= (FLUSH_MAX_MS / 1000) * GLASSES_RATE) flush();
   };
   source.connect(tap);
-  tap.connect(ctx.destination);
+  // A ScriptProcessor only runs when routed to the destination; a zero gain keeps it from playing a second copy of Mac's voice on the laptop speaker.
+  const mute = ctx.createGain();
+  mute.gain.value = 0;
+  tap.connect(mute);
+  mute.connect(ctx.destination);
 }
 
 function wav(pcm: Int16Array): Blob {
