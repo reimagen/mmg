@@ -6,6 +6,7 @@ import { join } from "node:path";
 
 const dir = mkdtempSync(join(tmpdir(), "mmg-mem-"));
 process.env.MEMORY_DB_PATH = join(dir, "memory.db");
+process.env.MEMORY_WIKI_DIR = join(dir, "wiki");
 
 const m = await import("../src/lib/memory/sqlite.ts");
 const e = await import("../src/lib/memory/enrich.ts");
@@ -57,6 +58,14 @@ const facts = e.absorbResearch(ada2, [
 assert.equal(facts.length, 2, "wrong person dropped, dup url dropped, capped at 2");
 assert.equal(facts[0].text, "Ada on growth — Ada leads growth at Oxen. — blog.oxen.ai/ada-growth");
 assert.equal(facts[0].source, "exa");
+
+// LLM-Wiki projection
+const { readFileSync, existsSync } = await import("node:fs");
+const page = readFileSync(join(dir, "wiki", "who", "people", "ada.md"), "utf8");
+assert.ok(page.startsWith("---\ntype: person\n"), "aDNA frontmatter");
+assert.ok(page.includes("- I run growth at Oxen and we ship weekly _(live,"), "fact with source");
+assert.ok(readFileSync(join(dir, "wiki", "who", "people", "index.md"), "utf8").includes("[[ada]]"), "index links page");
+assert.ok(existsSync(join(dir, "wiki", "CLAUDE.md")), "keeper CLAUDE.md seeded");
 
 rmSync(dir, { recursive: true });
 console.log("memory:check OK");

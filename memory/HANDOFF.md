@@ -88,3 +88,29 @@ curl -s localhost:3000/api/delegate -H 'content-type: application/json' \
 curl -s localhost:3000/api/memory/people | jq '.people[0] | {display_name, last_seen, facts}'
 # restart next dev → same GET → Ada still there, facts carry source + ts
 ```
+
+---
+
+## 13:20 addendum — context system: LLM backend + LLM-Wiki projection (opt-in)
+
+**What:** `BACKEND_LLM=1` in `web/.env.local` switches `POST /api/delegate` from the regex path to
+`web/src/lib/context/backend.ts`: a Responses-API tool loop (`BACKEND_MODEL`, default
+`gpt-5.4-mini`) over Lisa's `BACKEND_TOOLS` + `runMemoryTool`, same `DelegateResult` contract,
+any error/timeout → `handleClientDelegation` (verified: bad model → regex card in 0.5 s).
+**Default is OFF** — Lisa's working voice demo is untouched unless the env var is set.
+
+**System prompt:** `web/src/lib/context/prompt.ts` — keeper rules + a dynamic context packet =
+the people index + the person-in-focus's wiki page. Page in, page out.
+
+**LLM-Wiki (aDNA form):** every memory write also renders `web/data/wiki/` (gitignored):
+`CLAUDE.md` (the keeper's rules), `who/people/<name>.md` (six-field frontmatter, facts with
+source+date, open threads as checkboxes, interaction refs), `who/people/index.md`. Open the folder
+in Obsidian for the judges — that IS the memory, and the backend model reads the same page it
+maintains. `MEMORY_WIKI_DIR` moves it.
+
+Measured: ~5 s per delegate turn on the model path (2 tool rounds) vs ~0.9 s regex. Browser gates
+commentary on output-idle already, so the card just lands later. Lever if needed: fewer rounds
+(`reasoning.effort`), or keep regex for the intro turn and model for fact turns.
+
+Seen in Lisa's `extractFacts` (not touched): stripping the name with a bare regex turns
+"robotics" into "rotics" for a person named Bo — use `\b${name}\b`.

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { handleClientDelegation } from "@/lib/live/delegation";
+import { runBackend } from "@/lib/context/backend";
 import type { DelegateRequest } from "@/lib/live/types";
 
 export async function POST(request: Request) {
@@ -8,7 +9,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "delegation_id required" }, { status: 400 });
   }
   try {
-    return NextResponse.json(await handleClientDelegation(body));
+    // BACKEND_LLM=1 → model-driven backend (context system); else Lisa's regex path.
+    const handle = process.env.BACKEND_LLM === "1" ? runBackend : handleClientDelegation;
+    return NextResponse.json(await handle(body));
   } catch (error) {
     return NextResponse.json(
       {

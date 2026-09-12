@@ -2,6 +2,7 @@ import { DatabaseSync } from "node:sqlite";
 import { mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { randomUUID } from "node:crypto";
+import { writeIndex, writePersonPage } from "./wiki.ts";
 import type {
   Fact,
   Interaction,
@@ -73,6 +74,24 @@ function save(p: Person) {
          json=excluded.json, updated_at=excluded.updated_at`,
     )
     .run(p.id, nameKey(p.display_name), p.face_ref, JSON.stringify(p), nowIso());
+  projectWiki(p);
+}
+
+/** LLM-Wiki mirror: who/people/<name>.md + index, rewritten on every save. Never blocks a write on failure. */
+function projectWiki(p: Person) {
+  try {
+    writePersonPage(p, recentInteractions(p.id));
+    writeIndex(listPeople());
+  } catch (error) {
+    console.error("[memory] wiki projection failed", error);
+  }
+}
+
+export function recentInteractions(personId: string, limit = 5): Interaction[] {
+  return db()
+    .prepare("SELECT json FROM interaction WHERE person_id = ? ORDER BY ts DESC LIMIT ?")
+    .all(personId, limit)
+    .map((r) => JSON.parse((r as { json: string }).json) as Interaction);
 }
 
 function byId(id: string): Person | null {
