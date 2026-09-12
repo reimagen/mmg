@@ -481,3 +481,39 @@ constrained JSON decoding cut a run from 5.8 s to 1.2 s by removing the preamble
 **Now:** `OXEN_MODEL` defaults to `deepseek-v4-1-flash`. `npm run pool:check` reports Oxen 972 ms
 against OpenAI 1,373 ms, and three real roster imports through the server ran 0.9 / 1.3 / 2.2 s.
 Oxen is now the faster pool for batch work.
+
+## 16:25 — is it the whole pool, or one model? Swept all of them.
+
+Jake asked the right question. **It is not the pool.** 198 models are published; most are image or
+video. Benchmarked every text model that could serve our extraction job, then re-ran the interesting
+ones five times **interleaved**, so provider load hits every model equally.
+
+**Time to first token, 5 interleaved rounds:**
+
+| Model | TTFT runs (ms) | Median |
+|---|---|---|
+| `gpt-oss-120b` | 218 · 163 · 176 · 156 · 163 | **163** |
+| `ministral-8b-latest` | 728 · 382 · 340 · 353 · 344 | 353 |
+| `deepseek-v4-1-flash` | 539 · 434 · 411 · 348 · 377 | **411** |
+| `deepseek-v4-flash` | 5118 · 864 · 5305 · 7704 · 8018 | **5305 — erratic** |
+| `deepseek-v4-pro` | 7458 · 9275 · 11114 · 9015 · 10530 | 9275 — consistently slow |
+
+Others in one pass: `gpt-4o-mini` 434 · `mistral-small-2503` 561 · `claude-sonnet-5` 693 ·
+`gemini-2-5-flash` 1172 · `gpt-5-4-mini` 1718 · `glm-5-3-flash` 2978 · `kimi-k3` 3581 ·
+`gpt-5-nano` 4338 · `gpt-5-mini` 4544 · `zai-org-glm-5-3` 13482. Four ids 404 on chat/completions
+(`openai-gpt-oss-20b`, `qwen3-4b`, `llama-3-2-1b-instruct`).
+
+**Two outliers, and they are different shapes.** `deepseek-v4-pro` is *consistently* ~9 s to first
+token — plausible for a larger model, but worth knowing. `deepseek-v4-flash` is *erratic*: 0.86 s on
+one round and 8.0 s on the next, while its sibling `v4-1-flash` sat at 0.4 s throughout the same
+rounds. Erratic-but-sometimes-fast points at intermittent capacity or routing for that one model,
+not a cold start — that is the one to mention to Greg.
+
+**Correcting myself again:** my first report said `v4-flash` was uniformly 5–12 s. Over more samples
+it is bimodal, not uniformly slow. The median is genuinely bad; the claim "always slow" was not.
+
+**Default unchanged.** `deepseek-v4-1-flash` stays: 411 ms median TTFT, 2.6 s on the full
+three-team extraction, and it got every field right including attributing David Parkhurst to
+Aitherium rather than his university (`ministral-8b-latest` got that one wrong). `gpt-oss-120b` has
+the fastest first token but writes longer blurbs, so the full job lands at 3.5 s — no reason to
+churn the default again.

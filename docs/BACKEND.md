@@ -80,10 +80,12 @@ Measured on the same extraction job: **Oxen 0.9–2.2 s, OpenAI 1.4 s** — the 
 `MODEL_POOL=auto` is set locally, so imports and pre-flight run on Oxen and the OpenAI quota stays
 with the voice.
 
-**Model choice is the whole story on Oxen latency.** `deepseek-v4-flash` waits 5–12.6 s before its
-first token while generating in under 2 s; `deepseek-v4-1-flash` starts in 0.36–0.63 s. Same
-payload, same key, same minute. `OXEN_MODEL` defaults to `deepseek-v4-1-flash` for that reason — if
-you change it, re-measure.
+**Model choice is the whole story on Oxen latency**, and it is two models, not the pool. Median
+time to first token over 5 interleaved rounds: `gpt-oss-120b` 163 ms · `ministral-8b-latest` 353 ms
+· `deepseek-v4-1-flash` 411 ms · **`deepseek-v4-flash` 5,305 ms (erratic, 0.9–8.0 s)** ·
+**`deepseek-v4-pro` 9,275 ms**. `OXEN_MODEL` defaults to `deepseek-v4-1-flash`: fast, stable, and
+the most accurate of the three we checked on a real extraction. If you change it, re-measure — the
+full sweep is in `memory/HANDOFF.md`.
 
 `MODEL_POOL` picks the primary: `openai` (default), `oxen`, or `auto` (Oxen first, OpenAI on
 failure) — use `auto` when protecting the OpenAI quota for the voice. `OXEN_MODEL` defaults to
