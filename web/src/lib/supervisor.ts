@@ -1,5 +1,5 @@
 import { hermesEnabled } from "./hall/client";
-import type { CoachMode, LoopHealth } from "../types";
+import type { CoachMode, LoopHealth } from "./types";
 
 /**
  * Lisa + Jake share this. Realtime loop must never await enrichment.
@@ -93,7 +93,7 @@ still unclear, ask for that detail instead of guessing.
 - brief — 2-sentence whisper card for the HUD
 - recall(name) — optional lookup by spoken name; do not require a face_ref
 Never call Exa or treg from this path; enrichment is a separate killable queue
-(Hermes `room:research` when HERMES_ENABLED=1, else the local Exa queue).
+(Hermes \`room:research\` when HERMES_ENABLED=1, else the local Exa queue).
 Never invent a person.
 
 ## Return the result

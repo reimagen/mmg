@@ -2,7 +2,7 @@ import { brief, listPeople, logInteraction, recall, upsertPerson } from "@/lib/m
 import { enqueueEnrichment } from "@/lib/enrichment/queue";
 import { getMode } from "@/lib/supervisor";
 import type { Person } from "@/lib/types";
-import type { DelegateRequest, DelegateResult } from "./types";
+import type { DelegateRequest, DelegateResult, TranscriptTurn } from "./types";
 
 const INTRO = /nice to meet you[, ]+([A-Za-z][a-zA-Z-]+)/i;
 

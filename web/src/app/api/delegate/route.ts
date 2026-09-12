@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { DelegateRequest } from "@/lib/live/types";
+import { handleClientDelegation } from "@/lib/live/delegation";
 
 export async function POST(request: Request) {
   const body = (await request.json()) as DelegateRequest;

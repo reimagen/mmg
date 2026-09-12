@@ -8,7 +8,7 @@ import type {
   Person,
   RecallQuery,
   UpsertPersonInput,
-} from "./types";
+} from "../types";
 
 /**
  * Jake's lane.
