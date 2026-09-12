@@ -192,3 +192,38 @@ Reviewed `page.tsx` before the lane call; reverted my edits. Four findings worth
 
 Also pre-existing, not mine: `page.tsx:44` fails lint (`setState` synchronously inside an effect),
 and `/api/health` polls every 2 s even when the tab is hidden.
+
+---
+
+## 14:10 addendum — misheard names, and the one line I changed in `browser.ts`
+
+**Symptom (Jake):** "I say Sam at OpenAI and it always thinks I am saying Stan."
+
+**Upstream (Lisa's file, one line — please keep or tell me to revert).** `getUserMedia({ audio: true })`
+let Chrome run its own automatic gain control on top of a laptop mic that already carries +20 dB of
+hardware boost, so consonants pump and smear. `browser.ts` now uses a `MIC` constraint object:
+echo cancellation **on** (Mac's voice leaves the same laptop when the demo is on speakers), noise
+suppression **on** (loud room), **auto gain control off**, mono, 48 kHz. Nothing else about the
+session changed. A headset mic still beats any constraint we can set.
+
+Two levers I did **not** touch because they are yours: the Live session has no input-audio
+transcription config, so there is nowhere to bias the recognizer toward the names in the room. If
+the API exposes a transcription prompt or vocabulary hint, feeding it the `display_name`s already
+in memory is the highest-leverage fix left for this.
+
+**Downstream (my lane, shipped).** A correction now sticks and never forks the record:
+
+- `upsertPerson` with an existing `id` and a new `display_name` moves the old spelling into
+  `aliases`. Say "actually it's Sam" and the record renames; "Stan" still recalls him.
+- `detect()` reads corrections — "actually it's Sam", "I said Sam", and spelled-out names
+  ("S-A-M") — and hands them to the model as a signal.
+- The keeper prompt now states the rule: correct in place with the same `person_id`, never bank a
+  second person, and a spelling the person gives always beats the transcript.
+
+**On the projector screenshot:** `web/public/screen.html` is a bundled design export with no
+`fetch` in it — "MEMORY DOWN", "Memory API unreachable" and "MEMORY EMPTY" are static copy, not
+live readings. Memory was up with six people the whole time. To make that board real it needs
+`GET /api/runtime` (backend · health · jobs · last 12 traces · the focus person's wiki page) and
+`GET /api/memory/people`. Also note `health.memory` has no writer since the Python sidecar was
+retired: it sits at its default `"ok"` forever, so do not trust it as a liveness signal — a failed
+`/api/memory/people` call is the honest check.

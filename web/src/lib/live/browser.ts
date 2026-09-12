@@ -2,6 +2,24 @@ import type { DelegateResult, TranscriptTurn } from "./types";
 import { cutLiveBilling } from "./cut";
 
 /** Live is billed per second once POST /api/session returns. Never auto-start. */
+/**
+ * Names are what transcription gets wrong ("Sam at OpenAI" arrives as "Stan"), and the biggest
+ * cause is gain riding on top of noise processing. `audio: true` lets Chrome run its own AGC over
+ * a mic that already has +20 dB of hardware boost, so consonants pump and smear.
+ * Keep echo cancellation (Mac's voice comes out of the same laptop on speakers) and noise
+ * suppression (it is a loud room); drop the gain rider and pin mono 48 kHz, which is what the
+ * speech model wants. A headset mic still beats any constraint here.
+ */
+export const MIC: MediaStreamConstraints = {
+  audio: {
+    echoCancellation: true,
+    noiseSuppression: true,
+    autoGainControl: false,
+    channelCount: 1,
+    sampleRate: 48_000,
+  },
+};
+
 export const LIVE_IDLE_MS = 90_000;
 export const LIVE_MAX_MS = 8 * 60_000;
 export const LIVE_HIDDEN_MS = 15_000;
@@ -109,7 +127,7 @@ export class GptLiveClient {
     });
 
     try {
-      this.microphone = this.options.microphone ?? (await navigator.mediaDevices.getUserMedia({ audio: true }));
+      this.microphone = this.options.microphone ?? (await navigator.mediaDevices.getUserMedia(MIC));
       const mic = this.microphone.getAudioTracks()[0];
       if (!mic) throw new Error("Browser gave mic permission but no audio track");
       mic.enabled = true;
