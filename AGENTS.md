@@ -13,6 +13,7 @@ Scoring target is **5 on all four** ([`docs/SCORING.md`](./docs/SCORING.md)).
 | `docs/JUDGING.md` | 2-minute spoken run of show |
 | `docs/PRD.md` | Product, lanes |
 | `docs/ARCHITECTURE.md` | Three loops, failure modes |
+| **`docs/BACKEND.md`** | **Everything the memory backend does + how to use it (Jake) — start here** |
 | `docs/context_system_scope.md` | Memory contract (Jake) |
 | `docs/LIVE_LOOP.md` | Measured GPT Live client-delegation loop (LIVE-0002) |
 | `docs/HERMES.md` | Hermes ripcord (leave off; pull if time is short) |

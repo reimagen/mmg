@@ -10,7 +10,8 @@
     "seed": "node scripts/seed.mjs",
     "memory:check": "node scripts/memory-check.mjs",
     "preflight": "node scripts/preflight.mjs",
-    "roster:export": "node scripts/roster-export.mjs"
+    "roster:export": "node scripts/roster-export.mjs",
+    "backend:check": "node scripts/backend-check.mjs"
   },
   "dependencies": {
     "next": "16.3.5",

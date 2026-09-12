@@ -174,7 +174,7 @@ export function upsertPerson(input: UpsertPersonInput): Person {
     }
     if (input.facts) existing.facts = mergeFacts(existing.facts, input.facts);
     if (input.open_threads) {
-      existing.open_threads = [...new Set([...existing.open_threads, ...input.open_threads])];
+      existing.open_threads = dedupeThreads([...existing.open_threads, ...input.open_threads]);
     }
     existing.last_seen = ts;
     save(existing);
@@ -221,7 +221,7 @@ export function logInteraction(input: LogInteractionInput): Interaction {
     const detected = signalsToMemory(detect(interaction.extracted_facts.join(". ")));
     const threads = [...interaction.follow_ups, ...detected.follow_ups];
     if (threads.length) {
-      person.open_threads = [...new Set([...person.open_threads, ...threads])].slice(0, 8);
+      person.open_threads = dedupeThreads([...person.open_threads, ...threads]).slice(0, 8);
     }
     person.last_seen = interaction.ts;
     save(person);
@@ -295,6 +295,19 @@ export function absorbFacts(
 }
 
 /** ponytail: newest-kept cap so a long conversation can't grow the card, the page, or the prompt without bound. */
+/** Threads arrive from the model and the detector; punctuation and case are not a difference. */
+function dedupeThreads(threads: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const thread of threads) {
+    const key = thread.toLowerCase().replace(/[^a-z0-9 ]/g, "").replace(/\s+/g, " ").trim();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    out.push(thread);
+  }
+  return out;
+}
+
 function mergeFacts(existing: Fact[], incoming: Fact[]): Fact[] {
   const seen = new Set(existing.map((f) => f.text.toLowerCase()));
   const merged = [...existing];

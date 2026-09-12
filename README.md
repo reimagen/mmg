@@ -26,6 +26,9 @@ cd web && npm install && npm run seed && npm run dev   # http://localhost:3000
 
 Requires **Node 22+**. Health check: `curl localhost:3000/api/health`
 
+**What the backend can do and how to use it: [`docs/BACKEND.md`](./docs/BACKEND.md)** — one page.
+`cd web && npm run backend:check` prints the whole loop working in 20 seconds.
+
 ## Local P0 boot
 
 ```bash
