@@ -177,18 +177,6 @@ export class GptLiveClient {
     this.hangup("Mac hung up.");
   }
 
-  switchMode(mode: "coach" | "roast") {
-    this.send({
-      type: "session.instructions.append",
-      event_id: `mode_${Date.now()}`,
-      delegation_id: null,
-      content:
-        mode === "roast"
-          ? "Mode is now roast-me. One dry jab per turn after memory confirms who they are."
-          : "Mode is now coach. Whisper useful context. Do not roast.",
-    });
-  }
-
   private hangup(reason: string) {
     if (this.hanging) return;
     this.hanging = true;

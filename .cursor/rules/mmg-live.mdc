@@ -17,9 +17,10 @@ Cannot switch to Responses mid-session.
 ```
 
 The live agent is **Mac**. Process the room naturally; “Mac” is an optional address, not a mute gate.
+Voice is `marin`. Personality is `LIVE_INSTRUCTIONS` (cheerleader / Gen Z), not a second voice.
 Camera never reaches Live. Browser `getUserMedia({ audio: true })` is the default path.
 Glasses ingest is additive (`noteGlassesSeen`); if silent, `health.input === "browser"`.
 
-Exa: `timeout` + skip. Do not `await` enrichment before Live speaks.
-P0 is **bank + research**, not face recall. Docs: `docs/LIVE_LOOP.md`.
+Exa write-back is **Jake** (`enrichment/**`, `memory/enrich.ts`). Do not `await` enrichment before Live speaks.
+P0 remaining for Lisa: first+last name capture + tape. Docs: `docs/SHIP.md`.
 Hermes `send` only if `HERMES_ENABLED=1` *and* hall is already up; never room `cos`.

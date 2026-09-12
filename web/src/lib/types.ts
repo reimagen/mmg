@@ -1,5 +1,3 @@
-export type CoachMode = "coach" | "roast";
-
 export type FactSource = "live" | "enrollment" | "exa" | "treg" | "manual";
 
 export type FirstMet = {
@@ -52,7 +50,6 @@ export type Signal = {
 export type WhisperCard = {
   person: Person;
   brief: string;
-  mode: CoachMode;
 };
 
 export type RecallQuery = {

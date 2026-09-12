@@ -1,6 +1,5 @@
 import { brief, listPeople, logInteraction, recall, upsertPerson } from "@/lib/memory";
 import { enqueueEnrichment } from "@/lib/enrichment/queue";
-import { getMode } from "@/lib/supervisor";
 import type { Person } from "@/lib/types";
 import type { DelegateRequest, DelegateResult, TranscriptTurn } from "./types";
 
@@ -24,7 +23,6 @@ const STOP = new Set([
 export async function handleClientDelegation(req: DelegateRequest): Promise<DelegateResult> {
   const userText = recentUserText(req.transcripts);
   const person = await resolvePerson(userText, req);
-  const mode = getMode();
 
   if (!person) {
     return {
@@ -65,13 +63,10 @@ export async function handleClientDelegation(req: DelegateRequest): Promise<Dele
     `Whisper card: ${whisper}`,
   ].join("\n");
 
-  const commentary =
-    mode === "roast" ? roastLine(person, whisper) : whisper;
-
   return {
     delegation_id: req.delegation_id,
     thinking: clip(thinking),
-    commentary: clip(commentary),
+    commentary: clip(whisper),
     card: whisper,
     person,
     miss: false,
@@ -140,11 +135,6 @@ function guessName(text: string) {
 
 function capitalize(name: string) {
   return name.charAt(0).toUpperCase() + name.slice(1);
-}
-
-function roastLine(person: Person, whisper: string) {
-  const fact = person.facts[0]?.text ?? "we just met";
-  return `${whisper} Roast: still on the hook for ${fact.toLowerCase()}.`;
 }
 
 function clip(text: string) {

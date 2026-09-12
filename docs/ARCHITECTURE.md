@@ -47,10 +47,10 @@ Demo never awaits the network on stage.
 | No glasses | Browser mic | P0 (default path) |
 | Enrichment crash / timeout | Conversation continues; last banked card stays | P0 to show once |
 | Memory down | Un-augmented talk | P1 |
-| GPT Live quota | OpenRouter → Oxen | P1, only if quota dies |
+| GPT Live quota | Key present (OpenRouter); no Live on that API. Skip unless quota dies. | P1, not wired |
 | Face-rec miss | Spoken-name enroll | P2 (enroll is already P0) |
 
-Token pools: **OpenAI → OpenRouter → Oxen.ai** (`https://hub.oxen.ai/api/ai`).
+Token pools: **OpenAI for GPT Live.** OpenRouter + Oxen are text-only (neither has `gpt-live-1`). Failover is not wired.
 
 ## Privacy
 

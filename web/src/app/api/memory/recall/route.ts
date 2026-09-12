@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { brief, recall } from "@/lib/memory";
-import { getMode } from "@/lib/supervisor";
 
 export async function POST(request: Request) {
   const body = (await request.json()) as { face_ref?: string; name?: string };
@@ -14,6 +13,5 @@ export async function POST(request: Request) {
   return NextResponse.json({
     person,
     brief: await brief(person.id),
-    mode: getMode(),
   });
 }

@@ -9,13 +9,13 @@ Social copilot for a live conversation. Not a chatbox. The live agent is **Mac**
 
 Read `docs/SHIP.md` then `AGENTS.md` before nontrivial edits.
 
-P0 (remaining ~4 hours): bank the record + contact research on browser mic.
+P0: Live E2E is up. Remaining: name first/last (Lisa), Exa on card (Jake), tape (Luis+Lisa).
 P2: second-pass recognition, face-rec, glasses HUD, Auth0.
 
-- **Lisa** owns GPT Live (`web/src/lib/live/**`, `/api/session`, `/api/delegate`) + Exa.
+- **Lisa** owns GPT Live (`web/src/lib/live/**`, `/api/session`, `/api/delegate`). Stay out of Exa while Jake has it.
 - **Luis** owns the whisper-card UI (`web/src/app/page.tsx`).
-- **Jake** owns `memory/**` (FastAPI :7777).
-- **Saint** owns `glasses/**` (P2 — do not block P0).
+- **Jake** owns `web/src/lib/memory/**` + Exa write-back.
+- **Saint** owns `client/mentra/**` and `/glasses` (P2 — do not block P0).
 
 Do not mix lanes. Shared types only in `web/src/lib/types.ts`.
 

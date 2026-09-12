@@ -11,7 +11,7 @@ Second-pass recognition is **not** in this script.
 
 | Demo beat | Proof |
 |---|---|
-| `Start GPT Live · browser mic` | Agent runs **in the conversation**, not a chat form. |
+| **Talk** (browser mic) | Agent runs **in the conversation**, not a chat form. |
 | Whisper card banks a name | Spoken intro → `upsert` / `brief` → card + speech. |
 | A fact + a research line | `log_interaction` and Exa (or skip) show on card/ledger. |
 | No glasses | Do not stall. Input stays `browser`. |
@@ -33,7 +33,7 @@ Script line: *“You can’t Alt-Tab a CRM while shaking someone’s hand.”*
 
 Say out loud:
 
-**Client delegation + memory sidecar (fast) + killable research queue (slow).**
+**Client delegation + local memory (fast) + killable research queue (slow).**
 
 Hermes/hall is that queue when plugged in. The video does not need Hermes live.
 
@@ -56,13 +56,13 @@ Do not spend the 2 minutes on face-miss, quota failover, and hall packets.
 | Consent | Spoken-name enroll; no stranger camera lookup |
 
 The agent **does** enroll, log, brief, and enrich. It does **not** dump bystander
-transcripts. Roast and second-person recall are optional if time.
+transcripts. Second-person recall is optional if time. Roast mode is cut.
 
 ## 2-minute run of show
 
-0:00 Browser mic — *C1, environment*  
+0:00 Browser mic — **Talk** — *C1, environment*  
 0:20 Spoken intro — card banks them — *C2 + C4*  
 0:50 Talk, fact lands on ledger — *agentic, not Q&A*  
 1:10 Research line (or honest skip) — *slow plane*  
 1:35 One failure beat (no glasses *or* kill Exa) — *C3*  
-1:50 Ledger close — freeze
+1:50 Ledger close — freeze (`/` ; `/screen.html` only if it shows this person)

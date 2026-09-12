@@ -4,11 +4,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { GptLiveClient } from "@/lib/live/browser";
 import { cutLiveBilling } from "@/lib/live/cut";
 import type { DelegateResult } from "@/lib/live/types";
-import type { CoachMode, LoopHealth, Person } from "@/lib/types";
+import type { LoopHealth, Person } from "@/lib/types";
 
 type Status = {
   ok: boolean;
-  mode: CoachMode;
   health: LoopHealth;
   people: number;
   openai?: boolean;
@@ -56,17 +55,6 @@ export default function Operator() {
       body: JSON.stringify({ name }),
     }).then((r) => r.json() as Promise<{ brief?: string }>);
     setCard(result.brief ?? "Unknown. Capture the name out loud.");
-  }
-
-  async function toggleMode() {
-    const next = status?.mode === "roast" ? "coach" : "roast";
-    await fetch("/api/mode", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ mode: next }),
-    });
-    liveRef.current?.switchMode(next);
-    refresh();
   }
 
   async function startLive() {
@@ -170,13 +158,6 @@ export default function Operator() {
           className="rounded-sm bg-[var(--paper)] px-4 py-2 text-[var(--ink)]"
         >
           Recall Jake
-        </button>
-        <button
-          type="button"
-          onClick={toggleMode}
-          className="rounded-sm border border-[var(--hush)] px-4 py-2"
-        >
-          Mode: {status?.mode ?? "coach"}
         </button>
         <p className="w-full text-sm text-[var(--hush)]">{liveStatus}</p>
       </div>

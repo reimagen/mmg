@@ -15,31 +15,31 @@ guaranteed, Mentra glasses optional), **banks** who you just met, and
 | Ship (P0) | Stretch (P2) |
 |---|---|
 | Spoken-name enroll + fact log + ledger | Second-pass recognition / re-encounter |
-| Killable Exa contact research | Face-rec, sightings, glasses HUD |
-| Client delegation + memory sidecar | Auth0, treg, embeddings, Hermes-from-scratch |
+| Killable Exa contact research (Jake) | Face-rec, sightings, glasses HUD |
+| Client delegation + in-process SQLite | Auth0, treg, embeddings, Hermes-from-scratch |
 
 Do not reopen: no CopilotKit / TriggerDev / Mozilla; no video into GPT Live;
 no stranger camera lookup; no Auth0.
 
 ## Decisions already made
-- Models: **OpenAI + OpenRouter**. Live search: **Exa**. Hermes if hall is
+- Models: **OpenAI + Oxen.ai**. Live search: **Exa**. Hermes if hall is
   already up (`HERMES_ENABLED=1`); otherwise local Exa queue.
 - Demo use case: **banking a new contact during a networking conversation**.
 - Repo: **`github.com/reimagen/mmg`**. Team lead: **Greg (Oxen.AI)**.
-  - **Jake** — memory sidecar (`upsert` / `log` / `brief`).
-  - **Lisa** — GPT Live + client delegation + Exa (Hermes seam).
-  - **Saint** — glasses (P2; do not block P0).
+  - **Jake** — memory (`upsert` / `log` / `brief`) + Exa write-back.
+  - **Lisa** — GPT Live + client delegation (Mac). Stay out of Exa while Jake has it.
+  - **Saint** — Mentra Live (`client/mentra`, `/glasses`; P2; do not block P0).
   - **Luis** — whisper-card UI, 2-minute script, submission.
 - Realtime: `developers.openai.com/api/docs/guides/live`. **Client delegation.**
 
 ## Architecture (three loops)
 1. **Realtime (P0):** browser mic → GPT Live → whisper card. Glasses additive.
    Camera never reaches Live.
-2. **Memory (P0):** spoken name + utterances → `@/lib/memory` → SQLite (in-process, `node:sqlite`).
-   `recall` / `brief` < 150 ms, local, never behind the hall. Same five sync functions
-   as the stub; `MEMORY_BACKEND=json` rolls back to it.
-3. **Research (P0 local Exa / P1 Hermes):** killable queue; timeout + skip;
-   sourced facts upgrade the card. Crash ≠ conversation death.
+2. **Memory (P0):** spoken name + utterances → `@/lib/memory` SQLite (Jake D17).
+   `recall` / `brief` < 150 ms, local, never behind the hall. Rollback:
+   `MEMORY_BACKEND=json`. FastAPI `:7777` is retired.
+3. **Research (P0 local Exa / P1 Hermes):** Jake owns Exa write-back. Killable;
+   timeout + skip; sourced facts upgrade the card. Crash ≠ conversation death.
    [`HERMES.md`](./HERMES.md).
 
 ## Memory (Jake)
@@ -51,7 +51,7 @@ is P2.
 - Supervisor: Live ≠ research. Enrichment crash loses research, not the talk.
 - External calls: timeout + skip. Never await the network on stage.
 - **Rehearse one:** no glasses (browser) *or* kill Exa. Not the full board.
-- Token pools: OpenAI → OpenRouter → Oxen (`https://hub.oxen.ai/api/ai`). Implement failover only if quota dies.
+- Token pools: OpenAI for GPT Live. OpenRouter + Oxen are text-only (no `gpt-live-1`). Failover not wired unless quota dies.
 
 ## Privacy
 No stranger camera lookup. Spoken-name capture is the enroll path. Face-rec
@@ -66,9 +66,11 @@ See [`JUDGING.md`](./JUDGING.md). Short form:
 3. Research returns or skips — sourced line, conversation never waits.
 4. Close on the ledger: person, facts, timestamps.
 
-Roast + second encounter: only if P0 is already on tape.
+Roast mode is cut. Second encounter: only if P0 is already on tape.
 
 ## Open
-- `web/src/lib/memory` = SQLite in-process (P0, done — `memory/HANDOFF.md`).
-- Prove Live E2E on a mic (P0).
-- Hermes connect is P1, not a blocker.
+- Jake: wire `queue.ts` to `absorbResearch` (sourced Exa fact or honest skip on the card).
+- Lisa: first+last name capture; one proof take.
+- Luis: live person + source/ts on `/`; projector `/screen.html` is the room TV (not a substitute for Talk).
+- Saint: Mentra Live is on hardware (`/glasses`); P0 tape stays on `/`.
+- Hermes connect is P1, not a blocker (`ws` is installed).

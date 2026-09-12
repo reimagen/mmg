@@ -1,4 +1,4 @@
-import { LIVE_INSTRUCTIONS, getMode } from "@/lib/supervisor";
+import { LIVE_INSTRUCTIONS } from "@/lib/supervisor";
 
 /**
  * GPT Live session — **client delegation**.
@@ -13,7 +13,7 @@ import { LIVE_INSTRUCTIONS, getMode } from "@/lib/supervisor";
 export function liveSessionConfig() {
   return {
     model: "gpt-live-1",
-    instructions: LIVE_INSTRUCTIONS[getMode()],
+    instructions: LIVE_INSTRUCTIONS,
     audio: { output: { voice: "marin" } },
     delegation: { type: "client" as const },
   };
