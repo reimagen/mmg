@@ -72,9 +72,14 @@ work — roster imports and pre-flight research read thousands of characters per
 where a quota actually goes.
 
 ```bash
-echo "OXEN_API_KEY=..."  >> web/.env.local     # from ~/.secrets
-npm run pool:check                             # probes every configured pool, prints latency
+echo "OXEN_API_KEY=$(cat ~/.secrets/oxen-api-key.key)" >> web/.env.local
+npm run pool:check                                      # probes every pool, prints latency
 ```
+
+Measured on the same extraction job: OpenAI 2.6 s, Oxen 13.5 s cold and ~2 s warm, with the same
+output. Batch work is off the live path, so the slower pool costs nothing that matters.
+`MODEL_POOL=auto` is set locally, so imports and pre-flight run on Oxen and the OpenAI quota stays
+with the voice.
 
 `MODEL_POOL` picks the primary: `openai` (default), `oxen`, or `auto` (Oxen first, OpenAI on
 failure) — use `auto` when protecting the OpenAI quota for the voice. `OXEN_MODEL` defaults to

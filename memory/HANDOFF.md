@@ -421,3 +421,30 @@ With his real surname, live research now also finds his LinkedIn and an Oxen.AI 
 
 **Lesson for the demo:** a surprising fact is not automatically a wrong one. Every researched line
 carries a `url` — follow it before deciding.
+
+---
+
+## 15:45 — Oxen.ai wired as the second pool
+
+Key is at `~/.secrets/oxen-api-key.key`. Add it to `web/.env.local` and run `npm run pool:check`.
+
+**What runs where.** `src/lib/context/pool.ts` asks a structured question of whichever pool is up
+and falls through on failure. The split follows the tokens:
+
+| | Pool |
+|---|---|
+| `POST /api/roster/import`, `npm run preflight` | **Oxen** (`MODEL_POOL=auto`) — thousands of characters per person, all off the live path |
+| The keeper's tool loop (`/api/delegate`) | OpenAI Responses; fallback is the regex path, not another model |
+| The live voice session | OpenAI only — nobody else ships `gpt-live-1` |
+
+`MODEL_POOL` picks the primary (`openai` default · `oxen` · `auto` = Oxen first). `OXEN_MODEL`
+defaults to `deepseek-v4-flash`. `GET /api/runtime` reports `backend.pools`; `health.model_pool`
+names whichever pool last answered — it now reads `oxen` after an import, which is the point.
+
+**Measured, same extraction job, identical output:** OpenAI 2.6 s · Oxen 13.5 s cold, 2.1 s warm
+through the server. A real import ran on Oxen end to end and updated the roster.
+
+**Deliberately not ported:** the keeper's tool loop. An untested tool-calling path on a new provider
+hours before a demo is a second thing that can break, not a safety net. If OpenAI text dies, the
+regex path still composes cards; if OpenAI dies entirely, the voice is gone anyway and Oxen cannot
+replace it.
