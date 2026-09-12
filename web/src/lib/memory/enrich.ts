@@ -27,13 +27,14 @@ export function researchQuery(person: Person): string {
     .sort((a, b) => b.ts.localeCompare(a.ts))
     .slice(0, 2)
     .map((f) => f.text);
-  if (!name.includes(" ") && live.length === 0) return "";
   // The employer the model understood beats anything a regex can scrape; the detector is the floor.
   const signals = detect(live.join(". "));
   const company = person.org?.trim() || signals.find((s) => s.kind === "company")?.value;
+  // No employer or project means nothing to pin the search to, and an unpinned search finds someone
+  // else with the same name. That is a skip, not a bad search.
+  if (!company) return "";
   const role = signals.find((s) => s.kind === "role")?.value;
-  if (company) return [`"${name}"`, company, role ?? ""].join(" ").trim().slice(0, 200);
-  return [`"${name}"`, ...live, person.first_met.event].join(" ").slice(0, 200);
+  return [`"${name}"`, company, role ?? ""].join(" ").trim().slice(0, 200);
 }
 
 /**
@@ -50,17 +51,23 @@ export function absorbResearch(
   context: string[] = [],
 ): Fact[] {
   const name = person.display_name.trim().toLowerCase();
-  const fullName = name.includes(" ");
-  const tokens = context.map((c) => c.toLowerCase()).filter((c) => c.length > 2);
-  if (!fullName && tokens.length === 0) return [];
+  const tokens = [person.org ?? "", ...context]
+    .map((c) => c.toLowerCase().trim())
+    .filter((c) => c.length > 2);
+  // A name alone is never identity, a full name included: "Seth Tam" matched a GitHub bug filed by
+  // a different Seth, and a SOLIDWORKS talk by "Seth Tams". Without something the person actually
+  // told us to corroborate against, we bank nothing.
+  if (tokens.length === 0) return [];
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const named = new RegExp(String.raw`\b` + escaped + String.raw`\b`);
   const seen = new Set<string>();
   const facts: Fact[] = [];
   for (const r of results) {
     if (facts.length >= MAX_FACTS) break;
     if (!r.url || seen.has(r.url)) continue;
     const hay = [r.title, r.text, ...(r.highlights ?? [])].join(" ").toLowerCase();
-    if (!hay.includes(name)) continue;
-    if (!fullName && !tokens.some((t) => hay.includes(t))) continue;
+    if (!named.test(hay)) continue;
+    if (!tokens.some((t) => hay.includes(t))) continue;
     seen.add(r.url);
     const title = tidy(r.title ?? "") || "untitled";
     // A "highlight" is often just rule lines or nav junk; keep it only if it's really a sentence.

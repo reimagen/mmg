@@ -59,7 +59,7 @@ Obsidian; it is the memory, in aDNA form, maintained by the agent.
 | **Provenance** | Every researched `Fact` carries `url`. Link it — the whole claim is that lines are sourced. |
 | **Name corrections** | Say "actually it's Sam" and the record renames in place, keeping "Stan" as an alias. Needs the `id` on `upsert_person` (it is in the tool schema). |
 | **The employer** | `Person.org`, set by the model from any phrasing ("I work at", "my company is", "we're called"). Research searches on it. |
-| **Honest skips** | A bare first name with no corroboration banks **nothing** rather than a stranger's biography. That is a demo beat, not a bug. |
+| **Honest skips** | Research needs a corroborating token — the employer or project the person actually said. No employer, no search; a name alone is never identity, a full name included. Banks **nothing** rather than a stranger's biography. That is a demo beat, not a bug. |
 | **Kill research** | `POST /api/enrich {"kill":true}` — the rehearsed failure. Conversation continues. |
 | **Research one person** | `POST /api/enrich {"person_id":"person_ab12"}` — query is composed from their context, no need to write one. |
 | **Rollback** | `MEMORY_BACKEND=json` → the old JSON stub. Unset `BACKEND_LLM` → the regex path. |

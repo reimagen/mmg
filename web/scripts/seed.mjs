@@ -21,7 +21,7 @@ if (process.argv.includes("--empty")) {
     ["person_lisa", "Lisa Gu", ["Lisa", "reimagenai"], "reimagen.ai", "Owns the GPT Live session and the Exa enrichment queue"],
     ["person_luis", "Luis", ["Luimaee"], "reimagen.ai", "Owns the whisper-card UI, the demo and the submission"],
     ["person_saint", "Saint Louis", ["Saint", "Bootoshi"], "", "Owns the glasses layer — the MentraOS bridge and enrollment"],
-    ["person_seth", "Seth Tam", ["Seth", "sethtam"], "", "Convener; floats between demo data, enrollment and testing"],
+    ["person_seth", "Seth Tamrowski", ["Seth", "sethtam"], "Oxen AI", "Convener; GTM at Oxen AI, floats between demo data, enrollment and testing"],
     ["person_teddy", "Teddy Thoren", ["Teddy"], "", "Floater; keeps the backup GPU rig"],
     ["person_eric", "Eric Lawrence", ["Eric"], "", "Floater; testing"],
   ];

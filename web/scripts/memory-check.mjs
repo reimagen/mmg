@@ -46,7 +46,10 @@ const m2 = await import("../src/lib/memory/sqlite.ts?reopen");
 assert.equal(m2.listPeople().length, 2, "rows persist after reopen");
 
 // F3 enrich
-assert.equal(e.researchQuery({ ...ada, facts: [ada.facts[0]] }), "", "bare first name + boilerplate only → unqueryable");
+assert.equal(e.researchQuery({ ...ada, facts: [ada.facts[0]] }), "", "no employer → unqueryable");
+assert.equal(e.researchQuery({ display_name: "Seth Tam", org: "", facts: [], first_met: { event: "x", ts: "2026-01-01T00:00:00Z" }, aliases: [], id: "p", face_ref: null, enrolled: false, open_threads: [], last_seen: "2026-01-01T00:00:00Z" }), "", "a full name with no employer is still unqueryable");
+// a name must match on a word boundary, and needs corroboration even when it is a full name
+assert.deepEqual(e.absorbResearch({ ...ada2, display_name: "Seth Tam", org: "Oxen AI" }, [{ title: "Seth Tams on SOLIDWORKS", url: "https://x.com/s", text: "Seth Tams presents at Oxen AI" }]), [], "Seth Tams is not Seth Tam");
 assert.equal(e.researchQuery(ada2), '"Ada" Oxen growth', "detected employer beats raw transcript keywords");
 // a bare first name with no corroborating context banks nothing
 assert.deepEqual(e.absorbResearch(ada2, [{ title: "Ada Lovelace", url: "https://x.com/a", text: "Ada was a mathematician" }]), [], "first name alone is not identity");

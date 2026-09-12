@@ -367,3 +367,30 @@ clearing the table and restarting: 83 back.
 After any new import (`POST /api/roster/import`), run **`npm run roster:export`** to refresh both
 the committed copy and the lattice copy, then commit. Names, orgs and one-line descriptions only —
 no emails or contact details were collected.
+
+---
+
+## 15:55 — a wrong-person fact got through. Here is what happened and what changed.
+
+**Seth's card read "Grammar parser crash with Claude Code on 0.4.20; worked fine on 0.4.16."** It
+came from live Exa research — `github.com/lmstudio-ai/lmstudio-bug-tracker/issues/2236`, a bug filed
+by a different Seth. A second one had him giving a SOLIDWORKS talk in Lethbridge ("Seth Tams").
+Not hallucinated, not the roster: the gate let them through. Three failures stacked:
+
+1. **The seeded name was wrong.** I had "Seth Tam" from the team file; the attendee list says
+   **Seth Tamrowski, Oxen AI — GTM**. So every search was for a person who does not exist.
+2. **A full name skipped corroboration.** The rule was "a full name matches on its own". "Seth Tam"
+   is a full name, so nothing had to back it up.
+3. **The name match was a substring.** "Seth Tam" is inside "Seth Tams".
+
+**Now:** research requires a corroborating token **always** — the employer or project the person
+actually said (`Person.org` or a detected company). No employer, no search at all; `researchQuery`
+returns "" and the job skips. The name must match on a **word boundary**. And the seed carries
+Seth's real name and employer.
+
+Verified: *"hey nice to meet you, I am Seth"* → `Seth Tamrowski · Oxen AI`, one roster line from the
+attendee list, and the live job reports *"5 results, none confidently this person — skipped rather
+than guess."* The bad facts are gone from the DB and the wiki.
+
+**If you see a fact you do not recognise, it has a `url` — follow it.** That is what provenance is
+for, and it is why every researched line carries one.
