@@ -36,3 +36,20 @@ vs sidecar default.
 `mirror.sh pull` → D24 call with Lisa (sqlite vs `:7777`) → rebase/merge or drop `memory-docs-sync`
 → tell Lisa about `BACKEND_LLM=1` + Obsidian on `web/data/wiki/` → M5 health patch offer → M7
 rehearsals with the model path ON (watch the ~5 s card latency against LIVE-0002 idle gate).
+
+## 13:25 addendum — D24 resolved, dogfooding on
+
+Jake: "just use the best database for a project of this scale" → SQLite in-process, final.
+Retired `sidecar.ts` + `p0-up.sh` to `memory/legacy/`, rebased + merged the docs branch (HERMES
+diagram conflict: kept Lisa's new diagram, relabelled memory), `p0-check.sh` → `:3000`, seed now
+clears rows in place (found: `rm` of the DB file under a running `next dev` leaves the server on
+an unlinked inode). Dev server in tmux `mmg`, `BACKEND_LLM=1`, 5 seeded people + wiki pages.
+
+**Discord announce (Jake posts):**
+> Memory is final: SQLite in-process behind `@/lib/memory` (Node's `node:sqlite`, zero deps).
+> `:7777` / `MEMORY_API_URL` / `p0-up.sh` are gone — `cd web && npm run seed && npm run dev`, then
+> `./scripts/p0-check.sh`. Lisa's `sidecar.ts` is parked in `memory/legacy/`. Opt-in:
+> `BACKEND_LLM=1` in `web/.env.local` switches `/api/delegate` to a model-driven backend that
+> reads/writes an aDNA wiki of the people it meets (`web/data/wiki/`, open it in Obsidian). Off =
+> the regex path you have now. Details + curls: `memory/HANDOFF.md`. Please pull before editing
+> README / docs — I touched the `:7777` lines.
