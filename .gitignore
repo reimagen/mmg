@@ -1,0 +1,26 @@
+# Jake
+memory/mmg.db
+__pycache__/
+*.pyc
+
+# Next.js / local
+node_modules
+.next
+out
+.vercel
+.env
+.env.local
+.env.*.local
+*.sqlite
+*.sqlite-journal
+web/data/*.json
+!web/data/.gitkeep
+.DS_Store
+*.pem
+*.tsbuildinfo
+npm-debug.log*
+.cursor
+.merge-overlay/
+web/AGENTS.md
+web/CLAUDE.md
+web/next-env.d.ts

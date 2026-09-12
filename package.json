@@ -1,0 +1,14 @@
+{
+  "name": "mmg",
+  "private": true,
+  "description": "GPT Live MMG — wearable social copilot (OpenAI Global Hackathon)",
+  "scripts": {
+    "dev": "npm --prefix web run dev",
+    "build": "npm --prefix web run build",
+    "start": "npm --prefix web run start",
+    "lint": "npm --prefix web run lint"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

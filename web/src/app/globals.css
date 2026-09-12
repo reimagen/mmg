@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+:root {
+  --ink: #1c1710;
+  --paper: #ead9c0;
+  --card: #f4ead8;
+  --tungsten: #c98a3a;
+  --hush: #8a7d6b;
+  --live: #c44536;
+  --sage: #5e7a63;
+}
+
+body {
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+.display {
+  font-family: var(--font-display), ui-serif, Georgia, serif;
+}
