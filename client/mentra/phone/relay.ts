@@ -87,29 +87,39 @@ export function useRelay() {
       const host = new URL(url.replace(/^ws/, 'http')).hostname;
       const streamUrl = `rtmp://${host}:1935/live/mentra-live`;
       const log = (message: string) => { if (ws.current === sock && sock.readyState === WebSocket.OPEN) sock.send(JSON.stringify({tag: 'STREAM', message})); };
-      const startCamera = async (attempt = 1) => {
-        // The glasses ignore start_stream while they think one is still running (a start "timed out waiting for glasses response"); clear it first.
-        await BluetoothSdk.stopStream().catch(() => undefined);
-        // 720p at 1.5 Mbit: lighter on the glasses' wifi than the default; the sidecar detects at 640 anyway.
-        try {
-          const s = await BluetoothSdk.startStream({streamId: `relay-${Date.now()}`, streamUrl, type: 'start_stream', video: {width: 1280, height: 720, bitrate: 1_500_000, fps: 15}});
-          log(`camera ${s.status} -> ${streamUrl}`);
-        } catch (err) {
-          log(`camera failed (try ${attempt}): ${String(err)}`);
-          if (attempt < 3 && ws.current === sock) setTimeout(() => void startCamera(attempt + 1), 3000);
-        }
+      // One camera controller: a single in-flight start at a time. Overlapping starts each issue a stop, and every stop
+      // supersedes the others' starts and emits "stopped", which used to schedule yet more starts (the on/off flicker).
+      let inflight: Promise<void> | null = null;
+      let lastRestart = 0;
+      const startCamera = (attempt = 1) => {
+        if (inflight || ws.current !== sock) return;
+        inflight = (async () => {
+          // The glasses ignore start_stream while they think one is still running; clear it first.
+          await BluetoothSdk.stopStream().catch(() => undefined);
+          try {
+            // 720p at 1.5 Mbit: lighter on the glasses' wifi than the default; the sidecar detects at 640 anyway.
+            const s = await BluetoothSdk.startStream({streamId: `relay-${Date.now()}`, streamUrl, type: 'start_stream', video: {width: 1280, height: 720, bitrate: 1_500_000, fps: 15}});
+            log(`camera ${s.status} -> ${streamUrl}`);
+          } catch (err) {
+            log(`camera failed (try ${attempt}): ${String(err)}`);
+            if (attempt < 3) setTimeout(() => startCamera(attempt + 1), 3000);
+          }
+        })().finally(() => { inflight = null; });
       };
-      void startCamera();
+      startCamera();
       // The glasses' RTMP publish stalls now and then (MediaMTX sees an i/o timeout). Restart it ourselves; the SDK only retries a few times.
+      // Our own stop-before-start also emits "stopped": ignore events while starting, and never restart more than once per 15 s.
       streamSub.current?.remove();
       streamSub.current = BluetoothSdk.addListener('stream_status', (e: StreamStatusEvent) => {
         const stats = e.stats ? ` fps=${e.stats.fps ?? '?'} kbps=${Math.round((e.stats.bitrate ?? 0) / 1000)} dropped=${e.stats.droppedFrames ?? 0}` : '';
         const why = e.kind === 'error' ? ` ${e.errorDetails}` : e.kind === 'reconnect' && e.status === 'reconnecting' ? ` ${e.reason} (${e.attempt}/${e.maxAttempts})` : '';
         log(`stream ${e.status}${why}${stats}`);
-        if (ws.current !== sock) return;
+        if (ws.current !== sock || inflight) return;
         if (e.status === 'stopped' || e.status === 'error' || e.status === 'reconnect_failed') {
+          if (Date.now() - lastRestart < 15_000) return;
+          lastRestart = Date.now();
           log('camera restart in 2s');
-          setTimeout(() => { if (ws.current === sock) void startCamera(); }, 2000);
+          setTimeout(() => startCamera(), 2000);
         }
       });
     };
