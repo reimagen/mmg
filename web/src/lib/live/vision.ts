@@ -9,8 +9,10 @@
 const VISION_MODEL = process.env.VISION_MODEL ?? "gpt-5.6-luna";
 const VISION_TIMEOUT_MS = 6_000;
 
-export async function describeFrame(frame: string, recentUserText: string): Promise<string | undefined> {
+export async function describeFrame(frame: string, recentUserText: string, faces: { name: string | null }[] = []): Promise<string | undefined> {
   if (!process.env.OPENAI_API_KEY) return undefined;
+  const known = faces.filter((f) => f.name).map((f) => f.name);
+  const facesLine = faces.length === 0 ? "no faces detected" : `${known.length ? `known: ${known.join(", ")}` : "no known faces"}, ${faces.length - known.length} unknown`;
   const res = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
     headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}`, "Content-Type": "application/json" },
@@ -25,8 +27,10 @@ export async function describeFrame(frame: string, recentUserText: string): Prom
             {
               type: "input_text",
               text:
-                "You are the eyes of a social copilot worn on glasses. Boxes in the image mark faces; a blue box with a name is a known person, a green box is unknown. " +
-                "Describe the people the wearer is with, using the names from the boxes: appearance, what they hold or wear, setting, anything a good friend would remember. Three short lines. " +
+                "You are the eyes of a social copilot worn on glasses. Boxes mark faces: blue with a name = known person, green = unknown. " +
+                `Face recognition says: ${facesLine}. Trust it over what you read off the labels. ` +
+                "One line, under 20 words, only about the people in boxes (name if known, one memorable detail each). No setting, no scene, no laptops or plants. " +
+                "If no boxes: reply exactly 'no one in view'. " +
                 `Recent words from the wearer: "${recentUserText.slice(-300)}"`,
             },
             { type: "input_image", image_url: frame, detail: "low" },

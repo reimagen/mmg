@@ -12,9 +12,14 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import threading
 import time
 from pathlib import Path
+
+# Must be set before cv2 loads: no decoder buffering, drop late packets, TCP so frames arrive whole.
+# timeout is the RTSP socket I/O limit (µs): a stalled publisher makes read() fail in 5 s instead of hanging forever.
+os.environ.setdefault("OPENCV_FFMPEG_CAPTURE_OPTIONS", "rtsp_transport;tcp|fflags;nobuffer|flags;low_delay|max_delay;0|reorder_queue_size;0|timeout;5000000")
 
 import cv2
 import numpy as np
@@ -85,6 +90,8 @@ class Latest:
         self.fps = 0.0
         self.infer_ms = 0.0
         self.source_ok = False
+        self.raw_at = 0.0
+        self.reconnects = 0
 
 
 latest = Latest()
@@ -108,9 +115,11 @@ def capture_loop():
             with latest.lock:
                 latest.raw = frame
                 latest.raw_seq += 1
+                latest.raw_at = time.time()
         cap.release()
         with latest.lock:
             latest.source_ok = False
+            latest.reconnects += 1
 
 
 def detect_loop():
@@ -168,7 +177,8 @@ class EnrollRequest(BaseModel):
 @app.get("/status")
 def status():
     with latest.lock:
-        return {"source": SOURCE, "source_ok": latest.source_ok, "fps": round(latest.fps, 1), "infer_ms": round(latest.infer_ms, 1), "enrolled": len(gallery.ids), "faces": len(latest.faces)}
+        age = round(time.time() - latest.raw_at, 1) if latest.raw_at else None
+        return {"source": SOURCE, "source_ok": latest.source_ok, "frame_age_s": age, "reconnects": latest.reconnects, "fps": round(latest.fps, 1), "infer_ms": round(latest.infer_ms, 1), "enrolled": len(gallery.ids), "faces": len(latest.faces)}
 
 
 @app.get("/faces")

@@ -19,8 +19,12 @@ const broadcast = (set: Set<Sock>, msg: string | Uint8Array) => {
   for (const ws of set) ws.send(msg);
 };
 
-const event = (tag: string, message: string) =>
+const recent: { at: number; tag: string; message: string }[] = [];
+const event = (tag: string, message: string) => {
+  recent.push({ at: Date.now(), tag, message });
+  if (recent.length > 50) recent.shift();
   broadcast(uis, JSON.stringify({ type: "event", at: Date.now(), tag, message }));
+};
 
 const speak = async (text: string): Promise<Uint8Array> => {
   const out = `/tmp/mentra-say-${Date.now()}.wav`;
@@ -56,6 +60,7 @@ Bun.serve<{ role: Role }>({
       return Response.json({ ok: true, bytes: wav.byteLength }, { headers: cors });
     }
     if (url.pathname === "/status") return Response.json({ phones: phones.size, uis: uis.size, pcmBytes }, { headers: cors });
+    if (url.pathname === "/events") return Response.json(recent, { headers: cors });
     return new Response(html, { headers: { "content-type": "text/html" } });
   },
   websocket: {

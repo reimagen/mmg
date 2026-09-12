@@ -3,9 +3,6 @@ import { upsertPerson } from "@/lib/memory";
 
 const VISION_URL = process.env.VISION_URL ?? "http://127.0.0.1:8791";
 
-/** Same pattern the delegation path uses for spoken introductions. */
-export const INTRO = /nice to meet you[, ]+([A-Za-z][a-zA-Z-]+)/i;
-
 export type SeenFace = { person_id: string | null; name: string | null; score: number; box: [number, number, number, number] };
 
 /** Link the largest face currently in view to this person. The sidecar turns the box blue at once; memory marks them enrolled. */

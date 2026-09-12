@@ -4,7 +4,7 @@
 import {createAudioPlayer, setAudioModeAsync, type AudioPlayer} from 'expo-audio';
 import {File, Paths} from 'expo-file-system';
 import {useEffect, useRef, useState} from 'react';
-import BluetoothSdk, {type ButtonPressEvent, type MicPcmEvent} from '@mentra/engine/bluetooth-sdk';
+import BluetoothSdk, {type ButtonPressEvent, type MicPcmEvent, type StreamStatusEvent} from '@mentra/engine/bluetooth-sdk';
 
 export type RelayStatus = 'off' | 'connecting' | 'on' | 'error';
 
@@ -15,6 +15,7 @@ export function useRelay() {
   const ws = useRef<WebSocket | null>(null);
   const player = useRef<AudioPlayer | null>(null);
   const frameCount = useRef(0);
+  const streamSub = useRef<{remove: () => void} | null>(null);
 
   useEffect(() => {
     const subs = [
@@ -84,10 +85,27 @@ export function useRelay() {
       });
       // Camera goes to MediaMTX on the same laptop as the relay; glasses must be on that wifi.
       const host = new URL(url.replace(/^ws/, 'http')).hostname;
-      const streamId = `relay-${Date.now()}`;
-      BluetoothSdk.startStream({streamId, streamUrl: `rtmp://${host}:1935/live/mentra-live`, type: 'start_stream', video: {fps: 15}})
-        .then((s) => sock.send(JSON.stringify({tag: 'STREAM', message: `camera ${s.status} -> rtmp://${host}:1935/live/mentra-live`})))
-        .catch((err) => sock.send(JSON.stringify({tag: 'STREAM', message: `camera failed: ${String(err)}`})));
+      const streamUrl = `rtmp://${host}:1935/live/mentra-live`;
+      const log = (message: string) => { if (ws.current === sock && sock.readyState === WebSocket.OPEN) sock.send(JSON.stringify({tag: 'STREAM', message})); };
+      const startCamera = () => {
+        // 720p at 1.5 Mbit: lighter on the glasses' wifi than the default; the sidecar detects at 640 anyway.
+        BluetoothSdk.startStream({streamId: `relay-${Date.now()}`, streamUrl, type: 'start_stream', video: {width: 1280, height: 720, bitrate: 1_500_000, fps: 15}})
+          .then((s) => log(`camera ${s.status} -> ${streamUrl}`))
+          .catch((err) => log(`camera failed: ${String(err)}`));
+      };
+      startCamera();
+      // The glasses' RTMP publish stalls now and then (MediaMTX sees an i/o timeout). Restart it ourselves; the SDK only retries a few times.
+      streamSub.current?.remove();
+      streamSub.current = BluetoothSdk.addListener('stream_status', (e: StreamStatusEvent) => {
+        const stats = e.stats ? ` fps=${e.stats.fps ?? '?'} kbps=${Math.round((e.stats.bitrate ?? 0) / 1000)} dropped=${e.stats.droppedFrames ?? 0}` : '';
+        const why = e.kind === 'error' ? ` ${e.errorDetails}` : e.kind === 'reconnect' && e.status === 'reconnecting' ? ` ${e.reason} (${e.attempt}/${e.maxAttempts})` : '';
+        log(`stream ${e.status}${why}${stats}`);
+        if (ws.current !== sock) return;
+        if (e.status === 'stopped' || e.status === 'error' || e.status === 'reconnect_failed') {
+          log('camera restart in 2s');
+          setTimeout(() => { if (ws.current === sock) startCamera(); }, 2000);
+        }
+      });
     };
     sock.onerror = () => {
       setStatus('error');
@@ -104,6 +122,8 @@ export function useRelay() {
   };
 
   const disconnect = async () => {
+    streamSub.current?.remove();
+    streamSub.current = null;
     ws.current?.close();
     ws.current = null;
     setStatus('off');

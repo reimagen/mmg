@@ -19,12 +19,15 @@ export function openGlassesCamera(
   on: { status: (text: string) => void; faces?: (faces: SeenFace[]) => void },
 ): GlassesCamera {
   let latest: Uint8Array | undefined;
+  let lastAt = 0;
   let objectUrl: string | undefined;
+  let shown = "";
+  const report = (text: string) => { if (text !== shown) { shown = text; on.status(text); } };
   const sock = new WebSocket(wsUrl);
   sock.binaryType = "arraybuffer";
-  sock.onopen = () => on.status("camera live");
-  sock.onclose = () => on.status("camera closed");
-  sock.onerror = () => on.status(`cannot reach ${wsUrl}`);
+  sock.onopen = () => report("camera live");
+  sock.onclose = () => report("camera closed");
+  sock.onerror = () => report(`cannot reach ${wsUrl}`);
   sock.onmessage = (e) => {
     if (typeof e.data === "string") {
       const msg: unknown = JSON.parse(e.data);
@@ -33,13 +36,20 @@ export function openGlassesCamera(
     }
     const buffer = e.data as ArrayBuffer;
     latest = new Uint8Array(buffer);
+    lastAt = Date.now();
     if (objectUrl) URL.revokeObjectURL(objectUrl);
     objectUrl = URL.createObjectURL(new Blob([buffer], { type: "image/jpeg" }));
     img.src = objectUrl;
   };
+  // A stalled glasses publish makes the socket go quiet, not close. Say so in the status line.
+  const watchdog = window.setInterval(() => {
+    if (!lastAt) return;
+    const age = (Date.now() - lastAt) / 1000;
+    report(age > 2 ? `camera stalled ${age.toFixed(0)}s` : "camera live");
+  }, 1000);
   return {
     snapshot: () => (latest ? `data:image/jpeg;base64,${toBase64(latest)}` : undefined),
-    close: () => { sock.close(); if (objectUrl) URL.revokeObjectURL(objectUrl); img.removeAttribute("src"); },
+    close: () => { window.clearInterval(watchdog); sock.close(); if (objectUrl) URL.revokeObjectURL(objectUrl); img.removeAttribute("src"); },
   };
 }
 

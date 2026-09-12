@@ -39,13 +39,14 @@ export async function POST(request: Request) {
     const signals = detect(heard);
     const started = Date.now();
     // A recognized face in view resolves the person even when no name is spoken.
+    const faces = (await seenFaces()) ?? [];
     if (!body.face_ref) {
-      const known = (await seenFaces())?.find((f) => f.person_id);
+      const known = faces.find((f) => f.person_id);
       if (known?.person_id) body.face_ref = faceRef(known.person_id);
     }
     const [handled, sight] = await Promise.all([
       handle(body),
-      body.frame ? describeFrame(body.frame, heard).catch((e: unknown) => { console.error("[vision]", e); return undefined; }) : undefined,
+      body.frame ? describeFrame(body.frame, heard, faces).catch((e: unknown) => { console.error("[vision]", e); return undefined; }) : undefined,
     ]);
     // Meet workflow: any introduction that produced a person links the largest face in view to them.
     if (handled.person && !handled.person.enrolled) void enrollFace(handled.person.id, handled.person.display_name);
