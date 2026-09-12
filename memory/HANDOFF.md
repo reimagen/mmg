@@ -327,3 +327,28 @@ employer-corroboration rule. That guard is in `lookupRoster`.
 
 `GET /api/runtime` carries `roster { count, with_context, people[] }` if the UI wants to show what
 Mac already knows before the room starts.
+
+---
+
+## 15:25 addendum — the whole room is in (83), and it lives outside this repo too
+
+**The attendee list.** The event's Networking page (`/connect/mu_bS6by4ot5Ig`) lists all 77
+attendees with their company and role — login-only, four pages. Scraped and imported. With the team
+page and the per-person research, the roster is **83 people, 79 with real context**.
+
+That means almost anyone in that room can say their first name and get a card:
+
+```
+"nice to meet you, Dhravya"   → Dhravya — Supermemory — Founder (event roster)
+"hey I am Zelda"              → Zelda — Passes — Product design lead (event roster)
+"nice to meet you, Callahan"  → Callahan — Prairie Labs — Founder & CEO (event roster)
+```
+
+Worth knowing for the demo: **Jake's own profile is in there** ("AILedger — Co-founder"), and so is
+Seth's real surname (Seth Tamrowski, Oxen AI — GTM), which the earlier guess had wrong.
+
+**`npm run roster:export`** writes the roster out of the demo and into the lattice:
+`operations_jake.aDNA/what/context/people/roster_2026-09-12_openai_global_hackathon.{md,json}` — a
+table for humans, JSON for anything else. It is deliberately **not** left only inside `MMG.aDNA`,
+because the people outlast the build; this is a contact graph, not build state. Re-run it after any
+roster import and the export refreshes.
