@@ -18,7 +18,7 @@
 | D14 | Hermes/hall is **P1**, `HERMES_ENABLED=0` default; flip on only if hall `:8768` is already running. Local Exa queue is the ship path (refines D9) | HERMES.md 12:12 |
 | D15 | No Auth0 / login; one local operator. Secrets in `web/.env.local` only | SHIP.md 12:12 |
 | D16 | Rehearse **one** failure beat on tape (kill enrichment or no-glasses); quota→OpenRouter→Oxen only if quota actually dies | SHIP/ARCHITECTURE 12:12 |
-| D17 | **(proposed, awaiting Jake)** Memory = SQLite in-process behind Lisa's `@/lib/memory` seam via `node:sqlite`; same five sync signatures, `MEMORY_BACKEND=json` rollback; Python `:7777` retired to `memory/legacy/`; HTTP surface = existing `/api/memory/*` | campaign rescope 12:55 |
+| D17 | **(accepted 12:45, "continue the campaign")** Memory = SQLite in-process behind Lisa's `@/lib/memory` seam via `node:sqlite`; same five sync signatures, `MEMORY_BACKEND=json` rollback; Python `:7777` retired to `memory/legacy/`; HTTP surface = existing `/api/memory/*` | campaign rescope 12:55 |
 | D18 | Research facts are processed, not dumped: name gate, ≤2 per run, URL in text, `source: exa` | arch v1 13:05 |
 | D19 | `brief` = ranked template (live > enrollment > manual > exa > treg, newest first), ≤220 chars, never an LLM call | arch v1 |
 | D20 | Transcript text never persisted — `transcript_ref` only (governed tier) | arch v1 |

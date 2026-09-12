@@ -1,6 +1,6 @@
 ---
 type: context
-status: proposed
+status: active
 created: 2026-09-12
 updated: 2026-09-12
 last_edited_by: jake
