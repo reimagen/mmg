@@ -1,6 +1,5 @@
 import { BACKEND_TOOLS } from "@/lib/supervisor";
 import { runMemoryTool } from "@/lib/live/tools";
-import { handleClientDelegation } from "@/lib/live/delegation";
 import { enqueueEnrichment } from "@/lib/enrichment/queue";
 import { brief, listPeople, upsertPerson } from "@/lib/memory";
 import type { DelegateRequest, DelegateResult } from "@/lib/live/types";
@@ -10,14 +9,15 @@ import { detect } from "@/lib/memory/detect";
 
 /**
  * Model-driven delegation backend (context system). Same contract as handleClientDelegation;
- * the delegate route picks it with BACKEND_LLM=1. Any failure or timeout → Lisa's regex path,
- * so the live loop never dies on the model.
- * ponytail: raw fetch to the Responses API, no SDK; tool loop capped at 4 rounds / ~8 s.
+ * the delegate route picks it with BACKEND_LLM=1. Real function calling: the model banks people
+ * through upsert_person / log_interaction, never a regex. A failure is reported as a failure.
+ * ponytail: raw fetch to the Responses API, no SDK.
  */
 
-const MODEL = process.env.BACKEND_MODEL ?? "gpt-5.4-mini";
-const ROUND_MS = 8_000;
-const MAX_ROUNDS = 4;
+const MODEL = process.env.BACKEND_MODEL ?? "gpt-5.6-luna";
+const WEARER = process.env.WEARER_NAME ?? "Saint Louis";
+const ROUND_MS = 20_000;
+const TOTAL_MS = 60_000;
 
 type OutputItem =
   | { type: "function_call"; call_id: string; name: string; arguments: string }
@@ -28,12 +28,21 @@ type Answer = { card: string; say: string; person_id: string | null; org?: strin
 
 export async function runBackend(req: DelegateRequest): Promise<DelegateResult> {
   const key = process.env.OPENAI_API_KEY;
-  if (!key) return handleClientDelegation(req);
+  if (!key) throw new Error("OPENAI_API_KEY missing: the model backend cannot run");
   try {
     return await withModel(req, key);
   } catch (error) {
-    console.error("[backend] model path failed → regex fallback", error);
-    return handleClientDelegation(req);
+    // A backend failure is reported as a failure, never dressed up as a regex-made card:
+    // that path is what banked "How" and "I'm" during the live run.
+    console.error("[backend] model path failed", error);
+    return {
+      delegation_id: req.delegation_id,
+      thinking: `backend: ${MODEL} failed: ${String(error).slice(0, 200)}`,
+      commentary: "",
+      card: "Memory backend hiccup - still listening.",
+      person: null,
+      miss: true,
+    };
   }
 }
 
@@ -45,13 +54,16 @@ async function withModel(req: DelegateRequest, key: string): Promise<DelegateRes
   let input: unknown[] = [
     {
       role: "user",
-      content: `delegation_id: ${req.delegation_id}\n\nTranscript (latest last):\n${req.transcripts
+      content: `delegation_id: ${req.delegation_id}\nThe wearer of the glasses (the operator, "Mac's" human) is ${WEARER}. He is not a new person; never bank him.\n\nTranscript (latest last):\n${req.transcripts
         .map((t) => `${t.role}: ${t.text}`)
         .join("\n")}`,
     },
   ];
 
-  for (let round = 0; round < MAX_ROUNDS; round++) {
+  // No round cap: the model calls tools until it has an answer. One total deadline is the only stop,
+  // so a stuck loop surfaces as a reported failure, not a fake card.
+  const deadline = Date.now() + TOTAL_MS;
+  while (Date.now() < deadline) {
     const res = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
@@ -103,7 +115,7 @@ async function withModel(req: DelegateRequest, key: string): Promise<DelegateRes
       input.push({ type: "function_call_output", call_id: call.call_id, output: JSON.stringify(result).slice(0, 4000) });
     }
   }
-  throw new Error("tool loop exceeded MAX_ROUNDS");
+  throw new Error(`backend exceeded ${TOTAL_MS / 1000}s total`);
 }
 
 async function finish(
@@ -116,18 +128,8 @@ async function finish(
   if (!person && answer.person_id) {
     person = (await listPeople()).find((p) => p.id === answer.person_id) ?? null;
   }
-  // Safety net: a spoken name must always be banked. The model sometimes narrates the intro turn
-  // without calling a tool; the detector is deterministic, so fall back to it rather than lose
-  // the person. upsertPerson merges by name, so this can't create a duplicate.
-  const heardName = signals.find((s) => s.kind === "name")?.value;
-  if (!person && heardName) {
-    person = await upsertPerson({
-      display_name: heardName,
-      enrolled: false,
-      facts: [{ text: "Met via spoken-name capture (no camera lookup)", source: "live", ts: new Date().toISOString() }],
-    });
-    trace.push(`fallback upsert_person → ${person.id} (model banked nothing)`);
-  }
+  // No regex safety net: banking is the model's call through upsert_person. The detector's
+  // guesses ("I'm Saint", "How") are exactly the garbage a function call exists to prevent.
   // Persist the employer the model heard, whatever phrasing it arrived in.
   if (person && answer.org && answer.org !== person.org) {
     person = await upsertPerson({ id: person.id, display_name: person.display_name, org: answer.org });

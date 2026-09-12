@@ -28,7 +28,7 @@ case "${1:-status}" in
     up_one mediamtx "$ROOT" /opt/homebrew/opt/mediamtx/bin/mediamtx /opt/homebrew/etc/mediamtx/mediamtx.yml
     up_one relay    "$ROOT/client/mentra/relay" bun server.ts
     up_one vision   "$ROOT/vision" uv run python server.py
-    up_one web      "$ROOT/web" env MEMORY_API_URL=http://127.0.0.1:7777 HERMES_ENABLED=0 sv run OPENAI_API_KEY,EXA_API_KEY -- npm run dev
+    up_one web      "$ROOT/web" env MEMORY_API_URL=http://127.0.0.1:7777 HERMES_ENABLED=0 BACKEND_LLM=1 BACKEND_MODEL=gpt-5.6-luna sv run OPENAI_API_KEY,EXA_API_KEY -- npm run dev
     up_one metro    "$KIT" bunx expo start --dev-client --offline
     echo
     echo "phone relay URL:  ws://$IP:8790/glasses"
