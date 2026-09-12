@@ -76,10 +76,14 @@ echo "OXEN_API_KEY=$(cat ~/.secrets/oxen-api-key.key)" >> web/.env.local
 npm run pool:check                                      # probes every pool, prints latency
 ```
 
-Measured on the same extraction job: OpenAI 2.6 s, Oxen 13.5 s cold and ~2 s warm, with the same
-output. Batch work is off the live path, so the slower pool costs nothing that matters.
+Measured on the same extraction job: **Oxen 0.9–2.2 s, OpenAI 1.4 s** — the pools are level.
 `MODEL_POOL=auto` is set locally, so imports and pre-flight run on Oxen and the OpenAI quota stays
 with the voice.
+
+**Model choice is the whole story on Oxen latency.** `deepseek-v4-flash` waits 5–12.6 s before its
+first token while generating in under 2 s; `deepseek-v4-1-flash` starts in 0.36–0.63 s. Same
+payload, same key, same minute. `OXEN_MODEL` defaults to `deepseek-v4-1-flash` for that reason — if
+you change it, re-measure.
 
 `MODEL_POOL` picks the primary: `openai` (default), `oxen`, or `auto` (Oxen first, OpenAI on
 failure) — use `auto` when protecting the OpenAI quota for the voice. `OXEN_MODEL` defaults to

@@ -448,3 +448,36 @@ through the server. A real import ran on Oxen end to end and updated the roster.
 hours before a demo is a second thing that can break, not a safety net. If OpenAI text dies, the
 regex path still composes cards; if OpenAI dies entirely, the voice is gone anyway and Oxen cannot
 replace it.
+
+---
+
+## 16:10 — where the Oxen latency actually came from (measured, for Greg)
+
+My earlier "Oxen is 6–13 s" was real but **misattributed**. It is the model, not the provider, not
+the network, not our client.
+
+**Method.** Identical payloads, one key, interleaved so provider load hits both arms equally. Two
+independent HTTP clients (curl over HTTP/2, Node fetch over HTTP/1.1). Streaming used to split the
+wait before the first token from the generation itself. From Los Angeles, 85 ms TLS handshake to
+`hub.oxen.ai`.
+
+**Result — the wait is almost entirely before the first token:**
+
+| Model | Time to first token | Generation | Total |
+|---|---|---|---|
+| `deepseek-v4-flash` | 4,987 / 9,083 / 12,568 ms | 0.5–1.9 s | 6.6–14.5 s |
+| `deepseek-v4-1-flash` | **357 / 463 / 627 ms** | 0.6–1.1 s | **1.0–1.5 s** |
+
+So `v4-flash` spends 85–95 % of wall time queued before it emits anything, while generating as fast
+as its sibling. That reads like a cold or under-provisioned replica for that model rather than
+anything about the request. Worth mentioning to Greg — it is a one-model problem on their side, and
+the fix on ours was one line.
+
+**Ruled out along the way:** the network (85 ms), our client (curl 2.9–30.5 s and Node 3.6–24.4 s
+on interleaved identical calls — same distribution, so the variance is upstream), HTTP version
+(curl negotiated HTTP/2 and still saw 30 s), and `response_format`, which actually **helps**:
+constrained JSON decoding cut a run from 5.8 s to 1.2 s by removing the preamble tokens.
+
+**Now:** `OXEN_MODEL` defaults to `deepseek-v4-1-flash`. `npm run pool:check` reports Oxen 972 ms
+against OpenAI 1,373 ms, and three real roster imports through the server ran 0.9 / 1.3 / 2.2 s.
+Oxen is now the faster pool for batch work.

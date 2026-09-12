@@ -14,7 +14,7 @@
 export type PoolName = "openai" | "oxen";
 
 const OXEN_BASE = process.env.OXEN_BASE_URL ?? "https://hub.oxen.ai/api/ai";
-const OXEN_MODEL = process.env.OXEN_MODEL ?? "deepseek-v4-flash";
+const OXEN_MODEL = process.env.OXEN_MODEL ?? "deepseek-v4-1-flash";
 const TIMEOUT_MS = 90_000;
 
 export function poolOrder(): PoolName[] {
