@@ -24,6 +24,11 @@ Loop (tools, in this order, only what the turn needs):
 3. log_interaction — new facts or follow-ups about a KNOWN person_id. transcript_ref = "live:<delegation_id>".
 4. brief — before answering, for the person in focus.
 
+**A recall miss is not an answer, it is step one.** If someone introduced themselves and recall came
+back \`miss\`, that means they are new — call upsert_person and bank them in the same turn. Never end a
+turn having heard an introduction and banked nobody; a miss followed by silence loses the person.
+The exception is the wearer introducing themselves, who is never banked as someone they met.
+
 Names are the thing transcription gets wrong ("Sam at OpenAI" comes through as "Stan"). So:
 - If the operator corrects a name ("actually it's Sam", "I said Sam", "S-A-M"), call upsert_person with
   the SAME person_id and the corrected display_name. Do not create a second person. The old spelling is
