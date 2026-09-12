@@ -40,6 +40,7 @@ export default function Glasses() {
   const [liveStatus, setLiveStatus] = useState("GPT Live idle");
   const [faces, setFaces] = useState<SeenFace[]>([]);
   const [micLevel, setMicLevel] = useState(0);
+  const [roster, setRoster] = useState<{ name: string; org?: string; blurb?: string }[]>([]);
   const [lines, setLines] = useState<Line[]>([]);
   const [expanded, setExpanded] = useState(false);
   const [voiceToGlasses, setVoiceToGlasses] = useState(false);
@@ -74,14 +75,16 @@ export default function Glasses() {
     let down = false;
     const poll = async () => {
       try {
-        const [h, p, r] = await Promise.all([
+        const [h, p, rt, r] = await Promise.all([
           fetch("/api/health").then((r) => r.json() as Promise<{ health: LoopHealth }>),
           fetch("/api/memory/people").then((r) => r.json() as Promise<{ people: Person[] }>),
+        fetch("/api/runtime").then((r) => r.json() as Promise<{ roster?: { people: { name: string; org?: string; blurb?: string }[] } }>).catch(() => undefined),
           fetch(relayUrl.replace(/^ws/, "http").replace(/\/ui$/, "/status"), { signal: AbortSignal.timeout(800) }).then((r) => r.json() as Promise<{ micLevel: number }>).catch(() => undefined),
         ]);
         setHealth(h.health);
         setPeople([...p.people].sort((a, b) => Date.parse(b.last_seen) - Date.parse(a.last_seen)));
         if (r) setMicLevel(r.micLevel);
+      if (rt?.roster) setRoster(rt.roster.people);
         if (down) { down = false; sys("Memory API reachable again — recall is live."); }
       } catch {
         if (!down) { down = true; sys("Memory API unreachable — holding the last card, conversation continues."); }
@@ -228,6 +231,17 @@ export default function Glasses() {
               </div>
             ))}
             {people.length === 0 && <div className={`${s.empty} ${s.emptyBox}`}>MEMORY EMPTY — FILLS AS THE WEARER MEETS PEOPLE</div>}
+          </div>
+
+          <div className={`${s.label} ${s.section}`}><span>05 / EVENT ROSTER</span><b>{roster.length}</b></div>
+          <div className={s.people} style={{ maxHeight: 220, overflowY: "auto" }}>
+            {roster.map((r) => (
+              <div key={r.name} className={s.person} style={{ padding: "6px 10px" }}>
+                <header><span>{r.name}</span><i>{r.org?.toUpperCase() ?? ""}</i></header>
+                {r.blurb && <small>{r.blurb}</small>}
+              </div>
+            ))}
+            {roster.length === 0 && <div className={`${s.empty} ${s.emptyBox}`}>NO ROSTER LOADED — web/roster.json</div>}
           </div>
 
           <div className={s.config}>
