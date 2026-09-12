@@ -65,6 +65,8 @@ transcript banks Ada with a fact → `GET /api/memory/people` shows her with ISO
 | M5 | Failure beat: ~~`sqlite.ts` reads catch → `null`/`[]`, writes rethrow~~ (done in M1); `patchHealth({memory:"down"})` on catch in delegate route (Lisa's file — offer as 3-line patch) | SCORING C3 level 4 |
 | M6 | Enrichment write-back already lands via `upsertPerson({facts:[{source:"exa"}]})` — verify a stale-vs-fresh `ts` shows on the card | slow plane proof |
 | M7 | Rehearsal ×2 → `docs/SCORING.md` log; 5-line AAR below | freeze rule |
+| **M11** ✅ 13:55 | **Detection + research + runtime surface** (D25–D28): `detect.ts` signals on every turn → open threads + model prompt + Exa query; `researchPerson` real Exa with a corroboration gate; `Fact.url` provenance; `GET /api/runtime` for the UI lane — [[what/context/detection_and_research]]; main @6bb1b7d | Sam Altman turn banks role, promise, 2 sourced facts |
+| **M10** ✅ 13:50 | **III pass**: memory fixes applied (recall no longer writes `last_seen`; facts capped at 12); UI findings handed to Luis in `memory/HANDOFF.md` after Jake's lane call — our `page.tsx` edits reverted | four UI findings recorded, none applied |
 | **M9** ✅ 13:25 | **D24 + dogfood**: SQLite the only backend, sidecar/p0-up → legacy, docs merged (e76c271), seed row-wipe (7fb5166), dev server in tmux `mmg` with `BACKEND_LLM=1` | dogfooding starts |
 | **M8** ✅ 13:20 | **Context system** (Jake's 13:12 directive): opt-in LLM backend `BACKEND_LLM=1` + LLM-Wiki projection `web/data/wiki/` (D22/D23) — [[what/context/context_system_llm_wiki]]; main @51d1006 | showcase: agent maintains its own aDNA wiki |
 

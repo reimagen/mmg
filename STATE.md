@@ -30,6 +30,8 @@ tags: [state, mmg, hackathon]
   `memory/HANDOFF.md`); `npm run seed` (5 people, < 1 s) + `npm run memory:check`.
   **Exit gate passed** under `next dev`: Ada banked via `/api/delegate`, facts carry
   `source:live` + ISO `ts`, survives restart, JSON rollback verified.
+- **Detection + research shipped 13:55 (main @6bb1b7d, D25–D28):** every turn yields `Signal[]` (name+surname · role · company/project · commitment · ask · contact · correction) that feed open threads, the model prompt, and the Exa query; `researchPerson` runs the real Exa call with a **corroboration gate** (a bare first name banks nothing — the first live run returned two unrelated Jakes); `Fact.url` carries provenance; `GET /api/runtime` exposes backend/health/jobs/traces/wiki page for the UI lane — [[what/context/detection_and_research]]. Exa key loaded from `~/.secrets/exa-secret-hackathon.key`.
+- **Lane call (Jake 13:50): we do NOT own the UI.** `page.tsx` edits reverted; four III findings handed to Luis in `memory/HANDOFF.md` (the "Recall Jake" button recalls the newest person · "N enrolled" counts everyone · fact provenance invisible · `LoopHealth` rendered nowhere). Pre-existing lint error at `page.tsx:44` left alone.
 - **Context system shipped 13:20 (main @51d1006, D22/D23):** `BACKEND_LLM=1` → `context/backend.ts` model tool loop (gpt-5.4-mini, ~5 s/turn, regex fallback verified) with `context/prompt.ts` keeper prompt; every memory write mirrors to `web/data/wiki/` as aDNA `who/people/*.md` + index + `CLAUDE.md` — [[what/context/context_system_llm_wiki]]. Key at `~/.secrets/openai-secret-hackathon.key` → `web/.env.local`.
 - **Lisa 13:06/13:09 (529fb6f, 9b70c4c):** working browser-mic voice demo (Mac persona, Talk/Hang up, `docs/LIVE_LOOP.md`), all memory consumers now `await`; added `memory/sidecar.ts` HTTP client → Python `:7777` + `scripts/p0-up.sh` (dormant — `index.ts` still = sqlite, D24 open); fixed the duplicate import; stubbed `node:sqlite` types.
 - **13:25 D24 resolved → docs merged (main @e76c271, seed fix @7fb5166):** no `:7777` anywhere outside `memory/legacy/`; `scripts/p0-check.sh` probes `:3000`; `npm run seed` clears rows in place (safe under a running dev). Dogfood server: tmux `mmg`.
@@ -57,7 +59,7 @@ tags: [state, mmg, hackathon]
 ## NEXT (Jake) — campaign `how/campaigns/campaign_memory_p0.md` Phase 2
 
 0. ~~D24~~ resolved: SQLite. Docs merged. **DOGFOOD NOW:** `tmux attach -t mmg` (next dev on :3000, `BACKEND_LLM=1`) → http://localhost:3000 → Talk → bank real people; pages appear in `web/data/wiki/who/people/`.
-0b. Tell Lisa: `BACKEND_LLM=1` in her `.env.local` turns on the model backend + wiki; off = her demo unchanged. Show judges `web/data/wiki/` in Obsidian.
+0b. Tell the team: `BACKEND_LLM=1` + the Exa key are in `web/.env.local`; `GET /api/runtime` is the one call for showing the backend; four UI findings are in `memory/HANDOFF.md` for Luis.
 1. Post the Discord announce (below) — the `:7777` retirement is merged; CLAUDE.md §2 wants the team told.
 2. Hand Lisa `memory/HANDOFF.md`: `callExa → results[]` + the 6-line `run()` patch (name gate).
 3. M5: offer the 3-line `patchHealth({memory:"down"})` catch in her delegate route.
