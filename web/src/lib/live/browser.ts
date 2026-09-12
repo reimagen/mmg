@@ -71,7 +71,10 @@ export class GptLiveClient {
     reject: (error: Error) => void;
   } | undefined;
   private outputBusy = false;
-  private pendingSay: { delegationId: string; content: string }[] = [];
+  private pendingSay: { delegationId: string | null; content: string }[] = [];
+  private keeperSeen = 0;
+  private keeperBusy = false;
+  private keeperTimer: ReturnType<typeof setTimeout> | undefined;
   private options: LiveClientOptions;
   private onPageHide = () => {
     this.hangup("Mac hung up — tab closed.");
@@ -301,6 +304,7 @@ export class GptLiveClient {
       this.bumpIdle();
       this.pushTranscript("user", spoken);
       this.options.onStatus("Heard: " + this.lastUserText());
+      this.scheduleKeeper();
       return;
     }
     if (type === "session.output_transcript.delta" && spoken) {
@@ -362,8 +366,53 @@ export class GptLiveClient {
     }
   }
 
+  /**
+   * The keeper runs from the transcript itself (docs: "React to transcript fragments"), so a loud room
+   * where GPT Live never gets a turn still banks people. One run in flight; a run needs 40 new chars
+   * and fires after 1.5 s of quiet or every 160 chars while talk is continuous. GPT Live's own
+   * delegations still run; upsert_person merges by name, so both paths landing is harmless.
+   */
+  private scheduleKeeper() {
+    const text = this.transcripts.filter((t) => t.role === "user").map((t) => t.text).join(" ");
+    const fresh = text.length - this.keeperSeen;
+    if (fresh < 40) return;
+    clearTimeout(this.keeperTimer);
+    if (fresh >= 160) void this.runKeeper();
+    else this.keeperTimer = setTimeout(() => void this.runKeeper(), 1500);
+  }
+
+  private async runKeeper() {
+    if (this.keeperBusy) return;
+    this.keeperBusy = true;
+    this.keeperSeen = this.transcripts.filter((t) => t.role === "user").map((t) => t.text).join(" ").length;
+    const before = this.lastPersonId;
+    try {
+      const result = await fetch("/api/delegate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          delegation_id: `app_${Date.now()}`,
+          transcripts: this.transcripts.slice(-12),
+          last_person_id: this.lastPersonId,
+          frame: await this.options.snapshot?.(),
+        }),
+      }).then((r) => r.json() as Promise<DelegateResult>);
+      if (!result.person) return;
+      this.lastPersonId = result.person.id;
+      this.options.onCard(result);
+      // Quiet context always; say it aloud only when someone new was just banked.
+      this.send({ type: "session.thinking.append", event_id: `keep_${Date.now()}`, delegation_id: null, content: result.thinking });
+      if (result.person.id !== before && result.commentary) this.queueCommentary(null, result.commentary);
+    } catch {
+      this.options.onStatus("Keeper run skipped — conversation continues.");
+    } finally {
+      this.keeperBusy = false;
+      this.scheduleKeeper();
+    }
+  }
+
   /** LIVE-0002: commentary during the bridge sentence is swallowed ~8/10. */
-  private queueCommentary(delegationId: string, content: string) {
+  private queueCommentary(delegationId: string | null, content: string) {
     this.pendingSay.push({ delegationId, content });
     if (!this.outputBusy) this.flushCommentary();
   }
@@ -411,6 +460,7 @@ export class GptLiveClient {
     this.startedWait = undefined;
     this.clearSpendGuards();
     clearTimeout(this.closeTimer);
+    clearTimeout(this.keeperTimer);
     clearTimeout(this.outputIdleTimer);
     this.pendingSay = [];
     this.outputBusy = false;
