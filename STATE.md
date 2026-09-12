@@ -23,20 +23,20 @@ tags: [state, mmg, hackathon]
 
 ## Product state (build)
 
-- `what/mmg/` @ 202caa9: Next.js `web/` (browser operator, GPT Live **client delegation**,
-  `runMemoryTool` in `web/src/lib/live/tools.ts`, Exa queue, supervisor, hall client
-  `web/src/lib/hall/client.ts` + `POST /api/hall`, `HERMES_ENABLED=0` default) · Jake's
-  FastAPI `memory/` (SQLite, 4 tools, seed) · `glasses/` scaffold notes (P2) · docs:
-  SHIP / JUDGING / SCORING / SUBMISSION / HERMES / ARCHITECTURE / PRD / scope.
-- **Memory integration gap (P0, Lisa's client side):** `web/src/lib/memory/store.ts` is still
-  a JSON stub; `grep MEMORY_API_URL web/src` → nothing. SCORING C3 level 3 = "`/api/delegate`
-  hits `:7777`, not the stub". Jake's side: make `upsert`/`log`/`brief` real on the
-  **spoken-name path** (face_ref null), seed one demo person, WAL + busy_timeout.
-- Lisa edited `memory/README.md` (12:12): "P0: upsert/log/brief on spoken name. Face-ref
-  recall is P2." — accepted, matches the re-rank.
-- Oxen.ai third pool: base URL fixed to `hub.oxen.ai/api/ai` everywhere; env + client +
-  smoke test in `how/tools/oxen/`; key not yet issued. SHIP P1: "don't build Oxen unless
-  quota is actually dying."
+- **Memory P0 SHIPPED 12:50** (`what/mmg` main @7513504): `web/src/lib/memory/sqlite.ts` —
+  SQLite in-process via `node:sqlite` behind Lisa's five-function seam (D17 accepted), DB at
+  `web/data/memory.db` (WAL, gitignored); `index.ts` shim (`MEMORY_BACKEND=json` = old stub);
+  `enrich.ts` (`researchQuery` / `absorbResearch`, pure — Lisa's `queue.ts` patch is in
+  `memory/HANDOFF.md`); `npm run seed` (5 people, < 1 s) + `npm run memory:check`.
+  **Exit gate passed** under `next dev`: Ada banked via `/api/delegate`, facts carry
+  `source:live` + ISO `ts`, survives restart, JSON rollback verified.
+- **Docs branch `memory-docs-sync` @127c61e (pushed, NOT merged):** every `:7777` /
+  `MEMORY_API_URL` line → `@/lib/memory` + `/api/memory/*`; Python sidecar → `memory/legacy/`.
+  CLAUDE.md §2: announce in Discord before merging — text in session record.
+- Typo fixes landed in Lisa's files (import lines only; listed in HANDOFF): delegate route,
+  delegation.ts, supervisor.ts (unescaped backticks broke every route importing it), store.ts.
+  `@types/node` ^22. Not touched: `hall/client.ts` imports `ws` (not installed).
+- Oxen.ai third pool: base URL fixed; key still not issued. SHIP P1: don't build unless quota dies.
 - Graph: `jakejjoyner/MMG.aDNA` (private) + subtree `MMG.aDNA/` in team repo.
 
 ## Demo beats (2 min, P0 only — from SHIP/JUDGING)
@@ -47,16 +47,15 @@ tags: [state, mmg, hackathon]
 
 ## Session log
 
-- 13:15 closed: [[how/sessions/session_2026-09-12_1300_scope_memory_campaign]] — campaign + architecture scoped, D17–D21 awaiting yes, Oxen key pending.
+- 13:15 closed: [[how/sessions/session_2026-09-12_1300_scope_memory_campaign]] — campaign + architecture scoped, D17–D21 proposed.
+- 12:55 closed: [[how/sessions/session_2026-09-12_1245_memory_p0_build]] — M1–M4 built, gate passed, docs branch pushed.
 
-## NEXT (Jake) — campaign `how/campaigns/campaign_memory_p0.md` (M1→M4, exit gate, then P1)
+## NEXT (Jake) — campaign `how/campaigns/campaign_memory_p0.md` Phase 2
 
-1. `upsert_person` / `log_interaction` / `brief` real for the spoken-name path; ledger
-   fields the UI needs: facts with `source` (`live|exa|enrollment`) + `ts`.
-2. WAL + `timeout=5` on the SQLite connect (enrichment writes concurrently).
-3. Seed one demo person; confirm `:7777` answers from `web/` once Lisa lands `MEMORY_API_URL`.
-4. Hour before freeze: two rehearsals, fill `docs/SCORING.md` rehearsal log, 5-line AAR
-   in the mission file.
+1. Post the Discord announce (session record) → merge `memory-docs-sync` into main.
+2. Hand Lisa `memory/HANDOFF.md`: `callExa → results[]` + the 6-line `run()` patch (name gate).
+3. M5: offer the 3-line `patchHealth({memory:"down"})` catch in her delegate route.
+4. Hour before freeze: two rehearsals, `docs/SCORING.md` rehearsal log, finish the AAR.
 
 ## Consolidation note (2026-09-12)
 

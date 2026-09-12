@@ -1,6 +1,6 @@
 ---
 type: campaign
-status: planning
+status: active
 created: 2026-09-12
 updated: 2026-09-12
 last_edited_by: jake
@@ -48,13 +48,13 @@ D17–D21). Scope narrowed 13:05: Lisa owns Live + Exa HTTP; we own store + proc
 
 | M | Mission | Deliverable | Check |
 |---|---|---|---|
-| **M1** | **`sqlite.ts`** — same five exports as `store.ts`, backed by `node:sqlite` at `web/data/memory.db` (WAL, `busy_timeout=5000`, `user_version=1`). Tables `person(id, json)` + `interaction(id, person_id, ts, json)` — JSON columns, `Person`/`Interaction` stored whole; index on `person_id`. Upsert merge = Lisa's semantics (dedupe facts by lowercased text, union open_threads, `last_seen`). `brief` = her template, capped 2 sentences | `web/src/lib/memory/sqlite.ts` (~120 lines) | `node --experimental-strip-types` self-check: upsert → recall by name → log → brief → listPeople; reopen file → data persists |
-| **M2** | **Shim** — `index.ts` picks backend: `MEMORY_BACKEND=json` → `store.ts`, else `sqlite.ts`. Rollback = one env var, no code | `web/src/lib/memory/index.ts` (5 lines) | `npm run dev`, `curl /api/memory/people` → `{people:[…]}`; flip env → JSON stub again |
-| **M2b** | **`enrich.ts`** — `researchQuery(person)` + `absorbResearch(person_id, results, source)` + `absorbFacts` (pure; F2/F3 rules in the architecture doc). Hand Lisa the 6-line `run()` patch for `queue.ts` | `web/src/lib/memory/enrich.ts` (~80 lines) + patch | self-check: wrong-person result dropped; bare first name → `""`; ≤ 2 facts/run |
-| **M3** | **Seed + reset** — `web/scripts/seed.ts`: 4 spoken-name people (`enrolled:false`, `face_ref:null`) + 1 enrolled, `source:"enrollment"` facts, one open thread each; `npm run seed` wipes + loads < 10 s | `web/scripts/seed.ts`, `package.json` script | reseed, ledger shows cast |
-| **M4** | **HANDOFF.md + doc sync** — `memory/HANDOFF.md`: Lisa (nothing to change; env var; where the DB lives), Luis (`/api/memory/people` ledger shape, `brief` rule), Saint (`POST /api/glasses/ingest` unchanged, `POST /api/memory/upsert` by spoken name) with curls. One commit updates README / ARCHITECTURE / SHIP / SCORING ":7777" → "`/api/memory/*`, SQLite"; Python moved to `memory/legacy/`. **Announce in Discord before merging (CLAUDE.md §2)** | `memory/HANDOFF.md` + doc diff | every curl green on a fresh seed |
+| **M1** ✅ 12:47 | **`sqlite.ts`** — same five exports as `store.ts`, backed by `node:sqlite` at `web/data/memory.db` (WAL, `busy_timeout=5000`, `user_version=1`). Tables `person(id, json)` + `interaction(id, person_id, ts, json)` — JSON columns, `Person`/`Interaction` stored whole; index on `person_id`. Upsert merge = Lisa's semantics (dedupe facts by lowercased text, union open_threads, `last_seen`). `brief` = her template, capped 2 sentences | `web/src/lib/memory/sqlite.ts` (~120 lines) | `node --experimental-strip-types` self-check: upsert → recall by name → log → brief → listPeople; reopen file → data persists |
+| **M2** ✅ | **Shim** — `index.ts` picks backend: `MEMORY_BACKEND=json` → `store.ts`, else `sqlite.ts`. Rollback = one env var, no code | `web/src/lib/memory/index.ts` (5 lines) | `npm run dev`, `curl /api/memory/people` → `{people:[…]}`; flip env → JSON stub again |
+| **M2b** ✅ | **`enrich.ts`** — `researchQuery(person)` + `absorbResearch(person_id, results, source)` + `absorbFacts` (pure; F2/F3 rules in the architecture doc). Hand Lisa the 6-line `run()` patch for `queue.ts` | `web/src/lib/memory/enrich.ts` (~80 lines) + patch | self-check: wrong-person result dropped; bare first name → `""`; ≤ 2 facts/run |
+| **M3** ✅ | **Seed + reset** — `web/scripts/seed.ts`: 4 spoken-name people (`enrolled:false`, `face_ref:null`) + 1 enrolled, `source:"enrollment"` facts, one open thread each; `npm run seed` wipes + loads < 10 s | `web/scripts/seed.ts`, `package.json` script | reseed, ledger shows cast |
+| **M4** ✅ code+HANDOFF on `main` @7513504 · docs on branch `memory-docs-sync` @127c61e, **awaiting Jake's Discord announce → merge** | **HANDOFF.md + doc sync** — `memory/HANDOFF.md`: Lisa (nothing to change; env var; where the DB lives), Luis (`/api/memory/people` ledger shape, `brief` rule), Saint (`POST /api/glasses/ingest` unchanged, `POST /api/memory/upsert` by spoken name) with curls. One commit updates README / ARCHITECTURE / SHIP / SCORING ":7777" → "`/api/memory/*`, SQLite"; Python moved to `memory/legacy/`. **Announce in Discord before merging (CLAUDE.md §2)** | `memory/HANDOFF.md` + doc diff | every curl green on a fresh seed |
 
-**Phase 1 exit gate:** fresh seed → `POST /api/delegate` with a "nice to meet you, Ada"
+**Phase 1 exit gate: ✅ PASSED 12:50** under `next dev` (Ada banked via `/api/delegate`, facts `source:live` + ISO `ts`, survived restart; `MEMORY_BACKEND=json` rollback verified). Definition: fresh seed → `POST /api/delegate` with a "nice to meet you, Ada"
 transcript banks Ada with a fact → `GET /api/memory/people` shows her with ISO `ts`,
 `source:"live"` → restart `next dev` → she is still there.
 
@@ -62,7 +62,7 @@ transcript banks Ada with a fact → `GET /api/memory/people` shows her with ISO
 
 | M | Mission | Why |
 |---|---|---|
-| M5 | Failure beat: `sqlite.ts` reads catch → `null`/`[]`, writes log + rethrow; `patchHealth({memory:"down"})` on catch in delegate route (Lisa's file — offer as 3-line patch) | SCORING C3 level 4 |
+| M5 | Failure beat: ~~`sqlite.ts` reads catch → `null`/`[]`, writes rethrow~~ (done in M1); `patchHealth({memory:"down"})` on catch in delegate route (Lisa's file — offer as 3-line patch) | SCORING C3 level 4 |
 | M6 | Enrichment write-back already lands via `upsertPerson({facts:[{source:"exa"}]})` — verify a stale-vs-fresh `ts` shows on the card | slow plane proof |
 | M7 | Rehearsal ×2 → `docs/SCORING.md` log; 5-line AAR below | freeze rule |
 
@@ -78,4 +78,8 @@ Every touch of MMG.aDNA: `how/tools/mirror.sh pull` first, `push` last (`CLAUDE.
 
 ## AAR (fill at freeze)
 
-Worked · Didn't · Finding · Change · Follow-up
+- **Worked:** `node:sqlite` behind the seam — zero consumer changes, gate green first run under `next dev`.
+- **Didn't:** Lisa's tree didn't compile (4 missing imports + unescaped backticks in `supervisor.ts`); nobody had run `npm install` from this checkout.
+- **Finding:** the queue's stub write-back lands `[exa] exa stub…` facts with `source:exa` on every delegate — harmless (ranks last) but noisy on the ledger until her `queue.ts` patch.
+- **Change:** `absorbFacts` also strips "nice to meet you," (Lisa's extractor leaves it).
+- **Follow-up:** Discord announce → merge `memory-docs-sync`; Lisa's `callExa → results[]` patch; M7 rehearsals.
