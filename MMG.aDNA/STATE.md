@@ -30,7 +30,9 @@ tags: [state, mmg, hackathon]
   `memory/HANDOFF.md`); `npm run seed` (5 people, < 1 s) + `npm run memory:check`.
   **Exit gate passed** under `next dev`: Ada banked via `/api/delegate`, facts carry
   `source:live` + ISO `ts`, survives restart, JSON rollback verified.
-- **Docs branch `memory-docs-sync` @127c61e (pushed, NOT merged):** every `:7777` /
+- **Context system shipped 13:20 (main @51d1006, D22/D23):** `BACKEND_LLM=1` → `context/backend.ts` model tool loop (gpt-5.4-mini, ~5 s/turn, regex fallback verified) with `context/prompt.ts` keeper prompt; every memory write mirrors to `web/data/wiki/` as aDNA `who/people/*.md` + index + `CLAUDE.md` — [[what/context/context_system_llm_wiki]]. Key at `~/.secrets/openai-secret-hackathon.key` → `web/.env.local`.
+- **Lisa 13:06/13:09 (529fb6f, 9b70c4c):** working browser-mic voice demo (Mac persona, Talk/Hang up, `docs/LIVE_LOOP.md`), all memory consumers now `await`; added `memory/sidecar.ts` HTTP client → Python `:7777` + `scripts/p0-up.sh` (dormant — `index.ts` still = sqlite, D24 open); fixed the duplicate import; stubbed `node:sqlite` types.
+- **Docs branch `memory-docs-sync` @127c61e (pushed, NOT merged, now behind main):** every `:7777` /
   `MEMORY_API_URL` line → `@/lib/memory` + `/api/memory/*`; Python sidecar → `memory/legacy/`.
   CLAUDE.md §2: announce in Discord before merging — text in session record.
 - Typo fixes landed in Lisa's files (import lines only; listed in HANDOFF): delegate route,
@@ -49,9 +51,12 @@ tags: [state, mmg, hackathon]
 
 - 13:15 closed: [[how/sessions/session_2026-09-12_1300_scope_memory_campaign]] — campaign + architecture scoped, D17–D21 proposed.
 - 12:55 closed: [[how/sessions/session_2026-09-12_1245_memory_p0_build]] — M1–M4 built, gate passed, docs branch pushed.
+- 13:20 closed: [[how/sessions/session_2026-09-12_1310_context_system]] — Lisa's push ingested; LLM backend + LLM-Wiki shipped (D22–D24).
 
 ## NEXT (Jake) — campaign `how/campaigns/campaign_memory_p0.md` Phase 2
 
+0. **Team call (D24):** `index.ts` default = sqlite (current) or Lisa's `sidecar.ts` → `:7777`. Then rebase + merge `memory-docs-sync` (or drop it).
+0b. Tell Lisa: `BACKEND_LLM=1` in her `.env.local` turns on the model backend + wiki; off = her demo unchanged. Show judges `web/data/wiki/` in Obsidian.
 1. Post the Discord announce (session record) → merge `memory-docs-sync` into main.
 2. Hand Lisa `memory/HANDOFF.md`: `callExa → results[]` + the 6-line `run()` patch (name gate).
 3. M5: offer the 3-line `patchHealth({memory:"down"})` catch in her delegate route.
