@@ -52,7 +52,7 @@ is P2.
 - Supervisor: Live ≠ research. Enrichment crash loses research, not the talk.
 - External calls: timeout + skip. Never await the network on stage.
 - **Rehearse one:** no glasses (browser) *or* kill Exa. Not the full board.
-- Token pools: OpenAI for GPT Live. OpenRouter + Oxen are text-only (no `gpt-live-1`). Failover not wired unless quota dies.
+- Token pools: **OpenAI for GPT Live.** OpenRouter dropped — catalog has no `gpt-live-1` (404, 2026-09-12). Oxen is text-only too. No Live failover.
 
 ## Privacy
 No stranger camera lookup. Spoken-name capture is the enroll path. Face-rec
@@ -74,4 +74,4 @@ Roast mode is cut. Re-encounter is on the tape (C4=5).
 - Lisa: first+last enroll via `detect` into `display_name`; two proof takes.
 - Luis: live person + source/ts/url on `/`; hide Recall Jake; health/jobs from `GET /api/runtime`. Projector is the room TV.
 - Saint: Mentra Live is on hardware (`/glasses`); P0 tape stays on `/`.
-- Hermes connect is P1, not a blocker (`ws` is installed).
+- Hermes connect is a **ripcord** — leave off; pull it if time is short.

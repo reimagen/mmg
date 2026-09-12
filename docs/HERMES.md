@@ -1,8 +1,13 @@
-# Hermes + hall — slow plane (P1, not the 4-hour blocker)
+# Hermes + hall — ripcord (not the tape)
 
 **Rank:** [`SHIP.md`](./SHIP.md). Contact research **ships on local Exa**.
-Flip Hermes on only if hall `:8768` is already running. Do not stand up hall
-or `hermes serve` from scratch in the remaining hours.
+
+**Ripcord:** leave `HERMES_ENABLED=0`. If time is short, **pull it** — do not
+connect hall `:8768`, do not run `hermes serve`, do not debug packets. The
+code can stay. C3=5 is killable local Exa + a visible skip, not Hermes live.
+
+Flip Hermes on only if hall is already running **and** P0 (first+last, ledger,
+tape) is already in the can.
 
 Hermes is not on the Live path. Memory stays a sidecar. Full contract:
 [`chief_of_staff_architecture.md`](./chief_of_staff_architecture.md).

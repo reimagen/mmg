@@ -3,7 +3,7 @@ import type { LoopHealth } from "./types";
 
 /**
  * Lisa + Jake share this. Realtime loop must never await enrichment.
- * Token pool: OpenAI for GPT Live. OpenRouter / Oxen are text-only (no gpt-live-1).
+ * Token pool: OpenAI for GPT Live. OpenRouter dropped 2026-09-12 (no gpt-live-1 in catalog).
  *
  * Orchestration: GPT Live **client delegation**.
  * https://developers.openai.com/api/docs/guides/live-delegation?delegation-mode=client

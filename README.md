@@ -63,8 +63,7 @@ Degraded modes (rehearse **one**): no glasses → browser mic · Exa timeout →
 | Var | Where | Shape |
 |---|---|---|
 | `OPENAI_API_KEY` | GPT Live | OpenAI secret |
-| `OPENROUTER_API_KEY` | nice-to-have text pool | does **not** run GPT Live |
-| `OXEN_API_KEY` | OpenAI-compatible text pool | `https://hub.oxen.ai/api/ai` |
+| `OXEN_API_KEY` | unused for Live | no `gpt-live-1`; not a Mac fallback |
 | `EXA_API_KEY` | search | `exa_…` from [dashboard.exa.ai/api-keys](https://dashboard.exa.ai/api-keys) |
 | `TREG_TOKEN` | people/company enrich | [treg.to](https://treg.to/llms.txt) |
 

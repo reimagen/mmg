@@ -15,7 +15,7 @@ Scoring target is **5 on all four** ([`docs/SCORING.md`](./docs/SCORING.md)).
 | `docs/ARCHITECTURE.md` | Three loops, failure modes |
 | `docs/context_system_scope.md` | Memory contract (Jake) |
 | `docs/LIVE_LOOP.md` | Measured GPT Live client-delegation loop (LIVE-0002) |
-| `docs/HERMES.md` | Hermes slow plane (P1 — only if hall is already up) |
+| `docs/HERMES.md` | Hermes ripcord (leave off; pull if time is short) |
 | `docs/chief_of_staff_architecture.md` | Hall / Hermes contracts (reference, not the submission) |
 | `docs/SUBMISSION.md` | Portal fields + eligibility |
 
@@ -40,7 +40,7 @@ Shared types: `web/src/lib/types.ts`. Change those together.
 6. **Privacy:** no stranger camera lookup. Spoken-name capture is the enroll path. Face-rec is P2.
 7. **UI card is verbatim ground truth.** Live voice may paraphrase.
 8. **Net-new today.** MentraOS / GPT Live / Exa / hall / Hermes *contracts* are building blocks, not the submission.
-9. **Ship path is bank + research + a 20s spoken-name re-encounter.** Hermes is P1 (only if hall is already up). `HERMES_ENABLED=0` keeps local Exa. Auth0 is skip. Roast is cut.
+9. **Ship path is bank + research + a 20s spoken-name re-encounter.** Hermes is a time ripcord (`HERMES_ENABLED=0`; pull it if the clock is tight). Auth0 is skip. Roast is cut. OpenRouter dropped (no `gpt-live-1`).
 
 ## Commands
 
@@ -50,10 +50,10 @@ cd web && npm install && npm run seed && npm run dev    # :3000
 curl localhost:3000/api/health
 ```
 
-Env: `OPENAI_API_KEY`, `EXA_API_KEY` (UUID or `exa_…`), `OPENROUTER_API_KEY` (nice-to-have; not Live), `OXEN_API_KEY`, `TREG_TOKEN`, `MEMORY_BACKEND` (unset = SQLite; `json` = stub), `HERMES_ENABLED=0`, `HALL_WS_URL`, `HALL_TOKEN`.
+Env: `OPENAI_API_KEY`, `EXA_API_KEY` (UUID or `exa_…`), `OXEN_API_KEY`, `TREG_TOKEN`, `MEMORY_BACKEND` (unset = SQLite; `json` = stub), `HERMES_ENABLED=0`, `HALL_WS_URL`, `HALL_TOKEN`.
 
 ## Named orchestration (judges)
 
 **Client delegation + local memory (fast) + killable research queue (slow).**
-Hermes/hall is the same slow plane when plugged in — not required for the video.
-Token pool: OpenAI (GPT Live) → OpenRouter / Oxen for **text** only. Neither has `gpt-live-1`.
+Hermes/hall is a time ripcord — not required for the video. Default `HERMES_ENABLED=0` (local Exa).
+Token pool: **OpenAI GPT Live only.** OpenRouter dropped 2026-09-12 (`openai/gpt-live-1` 404; no Live/Realtime in catalog). Oxen has no `gpt-live-1` either.

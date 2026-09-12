@@ -35,7 +35,7 @@ Say out loud:
 
 **Client delegation + local memory (fast) + killable research queue (slow).**
 
-Hermes/hall is that queue when plugged in. The video does not need Hermes live.
+Hermes/hall is a **ripcord**. The video does not need Hermes live. Pull it if time is short.
 
 | Failure (pick **one** for the tape) | What judges should see |
 |---|---|

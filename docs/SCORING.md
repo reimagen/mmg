@@ -88,8 +88,9 @@ Neither has been proven in a Talk. Coded ≠ scored.
 Say out loud: **Client delegation + local memory (fast) + killable research queue (slow).**
 
 Jake already wired the slow plane (`researchPerson` → name gate → sourced facts or skip).
-Hermes is the *same* queue if hall is already up — do not start hall from scratch.
-OpenRouter / Oxen **cannot** replace GPT Live; they are not a C3=5 path.
+Hermes is the *same* queue if hall is already up — **ripcord**. Do not start hall
+from scratch. If time is short, leave `HERMES_ENABLED=0` and tape local Exa.
+OpenRouter **dropped** (2026-09-12 catalog: `openai/gpt-live-1` 404, no Live/Realtime models). Oxen cannot replace GPT Live either. Neither is a C3=5 path.
 
 | To reach | Must be true in the video |
 |---:|---|
@@ -101,7 +102,7 @@ OpenRouter / Oxen **cannot** replace GPT Live; they are not a C3=5 path.
 1. Luis: LoopHealth / jobs from `GET /api/runtime` visible (Jake’s finding — kill has no proof today).
 2. Proof Talk: full name + company → Exa fact with `url` **or** skip text, Talk never stalls.
 3. On tape: kill enrichment (`POST /api/enrich` kill) *or* pull the key; card stays; speech continues.
-4. One sentence of orchestration. Do not debug Hermes on stage. If hall `:8768` is already live, `HERMES_ENABLED=1` is extra credit, not the plan.
+4. One sentence of orchestration. **Do not debug Hermes on stage.** Pull the ripcord: local Exa only.
 
 - [x] Memory backend = SQLite in-process (`MEMORY_BACKEND` unset)
 - [x] Exa loop coded (`researchPerson` in `queue.ts`) — **not yet seen on the card**
@@ -156,7 +157,7 @@ If projector flakes: stay on `/`. If glasses flake: stay on `/`. Do not spend th
 
 | Who | Do now | Do not |
 |---|---|---|
-| **Lisa** | First+last enroll via `detect` name signal; two proof Talks; talk track on tape | Exa, Hermes-from-scratch, OpenRouter Live, roast |
+| **Lisa** | First+last enroll via `detect` name signal; two proof Talks; talk track on tape | Exa, Hermes, OpenRouter, roast |
 | **Jake** | Confirm one sourced Exa *or* honest skip against a **full** name in a live Talk | Face embeddings, wiki as the demo |
 | **Luis** | Live card + source/ts/url; health/jobs strip; hide Recall Jake | Chat composer, making `/screen.html` required |
 | **Saint** | Off the tape unless a 5s “same agent, glasses optional” cut | Making glasses the environment |
